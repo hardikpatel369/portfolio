@@ -183,22 +183,43 @@ const initPreloader = () => {
 
 // 2. Hero Animation
 const initHero = () => {
-    // Split Text
+    const heroContainer = document.querySelector('.hero__container');
+    const subtitle = document.querySelector('.hero__subtitle');
+
+    // Split Text - this creates the .char elements
     const title = new SplitType('.hero__title', { types: 'chars' });
 
+    // 1. Set initial hidden states BEFORE revealing container
+    gsap.set(title.chars, {
+        yPercent: 100,
+        opacity: 0
+    });
+
+    gsap.set(subtitle, {
+        y: 20,
+        opacity: 0
+    });
+
+    // 2. Reveal container now that initial states are set
+    // CSS has visibility:hidden on .hero__container, .is-ready makes it visible
+    heroContainer.classList.add('is-ready');
+
+    // 3. Create animation timeline
     const tl = gsap.timeline();
 
-    tl.from(title.chars, {
-        yPercent: 100,
-        opacity: 0,
+    // Animate characters TO visible state
+    tl.to(title.chars, {
+        yPercent: 0,
+        opacity: 1,
         stagger: 0.05,
         duration: 1,
         ease: 'power4.out'
     });
 
-    tl.from('.hero__subtitle', {
-        y: 20,
-        opacity: 0,
+    // Animate subtitle TO visible state
+    tl.to(subtitle, {
+        y: 0,
+        opacity: 1,
         duration: 1,
         ease: 'power2.out'
     }, "-=0.5");

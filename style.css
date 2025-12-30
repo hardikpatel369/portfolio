@@ -137,7 +137,7 @@ section {
   /* For Reveal */
 }
 
-/* For SplitText characters */
+/* For SplitText characters - inline-block needed for transform */
 .hero__line .char {
   display: inline-block;
 }
@@ -183,6 +183,13 @@ section {
 .hero__container {
   position: relative;
   z-index: 2;
+  /* CRITICAL: Hide container initially - JS reveals it when ready */
+  visibility: hidden;
+}
+
+/* JS adds this class to reveal and trigger animations */
+.hero__container.is-ready {
+  visibility: visible;
 }
 
 /* About (Horizontal) */
