@@ -285,6 +285,8 @@ section {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .project-card__title {
@@ -342,19 +344,11 @@ section {
   position: relative;
   max-width: 800px;
   margin: 0 auto;
-  padding-left: 2rem;
+  text-align: center;
 }
 
 .timeline__line {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  stroke: var(--accent);
-  stroke-width: 2px;
-  stroke-dasharray: 1000;
-  /* For drawing animation */
-  stroke-dashoffset: 1000;
+  display: none;
 }
 
 .timeline__item {
@@ -372,15 +366,7 @@ section {
 }
 
 .timeline__dot {
-  position: absolute;
-  left: -26px;
-  /* Align with line */
-  top: 10px;
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent-glow);
+  display: none;
 }
 
 .timeline__role {
