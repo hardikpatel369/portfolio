@@ -5,6 +5,116 @@ import SplitType from 'split-type';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Image Trail Effect Class
+class ImageTrail {
+    constructor(container) {
+        this.container = container;
+        this.images = [...container.querySelectorAll('.image-trail__img')];
+        this.imgIndex = 0;
+        this.zIndex = 1;
+
+        // Mouse position tracking
+        this.mousePos = { x: 0, y: 0 };
+        this.lastPos = { x: 0, y: 0 };
+        this.cachePos = { x: 0, y: 0 };
+
+        // Threshold for showing new image (distance in pixels)
+        this.threshold = 80;
+
+        // Bind methods
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.render = this.render.bind(this);
+
+        this.init();
+    }
+
+    init() {
+        // Listen to mouse movement on the hero section
+        const hero = this.container.closest('.hero');
+        hero.addEventListener('mousemove', this.onMouseMove);
+
+        // Start render loop
+        this.render();
+    }
+
+    onMouseMove(e) {
+        const rect = this.container.getBoundingClientRect();
+        this.mousePos.x = e.clientX - rect.left;
+        this.mousePos.y = e.clientY - rect.top;
+    }
+
+    getDistance(x1, y1, x2, y2) {
+        return Math.hypot(x2 - x1, y2 - y1);
+    }
+
+    showNextImage() {
+        const img = this.images[this.imgIndex];
+
+        // Update z-index for stacking
+        this.zIndex++;
+        img.style.zIndex = this.zIndex;
+
+        // Random rotation for visual interest
+        const rotation = gsap.utils.random(-15, 15);
+
+        // Position the image at cursor
+        gsap.set(img, {
+            x: this.mousePos.x,
+            y: this.mousePos.y,
+            rotation: rotation
+        });
+
+        // Animate in
+        gsap.timeline()
+            .to(img, {
+                opacity: 1,
+                scale: 1,
+                duration: 0.4,
+                ease: 'power2.out'
+            })
+            .to(img, {
+                opacity: 0,
+                scale: 0.3,
+                duration: 0.8,
+                ease: 'power2.in',
+                delay: 0.3
+            });
+
+        // Cycle to next image
+        this.imgIndex = (this.imgIndex + 1) % this.images.length;
+
+        // Update cache position
+        this.cachePos.x = this.mousePos.x;
+        this.cachePos.y = this.mousePos.y;
+    }
+
+    render() {
+        // Calculate distance from last cached position
+        const distance = this.getDistance(
+            this.mousePos.x,
+            this.mousePos.y,
+            this.cachePos.x,
+            this.cachePos.y
+        );
+
+        // Show new image if moved past threshold
+        if (distance > this.threshold) {
+            this.showNextImage();
+        }
+
+        // Continue render loop
+        requestAnimationFrame(this.render);
+    }
+}
+
+// Initialize Image Trail
+const initImageTrail = () => {
+    const container = document.getElementById('image-trail');
+    if (container) {
+        new ImageTrail(container);
+    }
+};
+
 // Initialize Lenis (Smooth Scroll)
 const initLenis = () => {
     const lenis = new Lenis({
@@ -221,6 +331,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 ease: 'power4.inOut',
                 delay: 0.5,
                 onComplete: () => {
+                    initImageTrail();
                     initHero();
                     initAbout();
                     initSkills();
