@@ -1,0 +1,454 @@
+:root {
+  --bg-dark: #0E0E0E;
+  --surface: #1C1C1C;
+  --text-primary: #EDEDED;
+  --text-secondary: #A1A1AA;
+  --accent: #60A5FA;
+  /* Electric Blue */
+  --accent-glow: rgba(96, 165, 250, 0.3);
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --easing-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Noise Overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.section-title {
+  font-size: clamp(3rem, 5vw, 6rem);
+  font-weight: 700;
+  margin-bottom: 4rem;
+  letter-spacing: -0.02em;
+}
+
+.section-title--center {
+  text-align: center;
+}
+
+/* Preloader */
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--accent);
+  font-family: monospace;
+}
+
+.preloader__terminal {
+  font-size: 1.5rem;
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+.preloader__bar-container {
+  width: 300px;
+  height: 2px;
+  background-color: #333;
+  overflow: hidden;
+}
+
+.preloader__bar {
+  width: 0%;
+  height: 100%;
+  background-color: var(--accent);
+}
+
+/* Layout */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+section {
+  padding: 10vh 0;
+  position: relative;
+}
+
+/* Hero */
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero__title {
+  font-size: clamp(4rem, 12vw, 12rem);
+  font-weight: 500;
+  /* Lighter weight for elegance */
+  letter-spacing: -0.05em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.9;
+  /* Removed mix-blend-mode for cleaner white-on-black contrast */
+}
+
+.hero__line {
+  display: block;
+  overflow: hidden;
+  /* For Reveal */
+}
+
+/* For SplitText characters */
+.hero__line .char {
+  display: inline-block;
+}
+
+.hero__subtitle {
+  margin-top: 3rem;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  /* Cleaner than monospace */
+  font-weight: 300;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+/* About (Horizontal) */
+.about {
+  min-height: 100vh;
+  /* Ensure parent has height for pinning to work effectively */
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.about__track {
+  display: flex;
+  width: 300vw;
+  /* 3 panels wide */
+  height: 100%;
+}
+
+.about__panel {
+  width: 100vw;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4rem;
+}
+
+.about__content {
+  max-width: 800px;
+  position: relative;
+}
+
+.about__text {
+  font-size: 2rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.about__text strong {
+  color: var(--text-primary);
+}
+
+.about__stat {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  font-family: var(--font-heading);
+  opacity: 0.1;
+  font-weight: 700;
+}
+
+.about__stat-num {
+  font-size: 10rem;
+  display: block;
+}
+
+/* Skills */
+.skills {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  perspective: 1000px;
+}
+
+.skills__cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  transform-style: preserve-3d;
+}
+
+.skill-tag {
+  padding: 1rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  font-family: monospace;
+  font-size: 1.2rem;
+  transition: all 0.3s var(--easing-smooth);
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.skill-tag:hover {
+  background: var(--accent);
+  color: var(--bg-dark);
+  border-color: var(--accent);
+  box-shadow: 0 0 30px var(--accent-glow);
+  transform: scale(1.1) translateZ(20px);
+}
+
+/* Projects (Stacking) */
+.projects {
+  padding-bottom: 20vh;
+}
+
+.projects__stack {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  /* They stack via sticky positioning in CSS or absolute in JS.
+     "Sticky" with top is easiest for this effect without pure JS takeover */
+}
+
+/* We will rely on GSAP for the parallax pinned stack, 
+   but basic CSS setup: card absolute/sticky */
+.project-card {
+  height: 70vh;
+  background-color: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  padding: 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 5vh;
+  /* spacing */
+  overflow: hidden;
+  /* Initial sticky approach, GSAP enhances this */
+  position: sticky;
+  top: 15vh;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.project-card__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.project-card__title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.project-card__desc {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.project-card__tags span {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 50px;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.project-card__visual {
+  background-color: #000;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.project-card__img-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.project-card__img-placeholder--1 {
+  background: linear-gradient(45deg, #1E293B, #0F172A);
+}
+
+.project-card__img-placeholder--2 {
+  background: linear-gradient(45deg, #10B981, #064E3B);
+}
+
+.project-card__img-placeholder--3 {
+  background: linear-gradient(45deg, #6366F1, #312E81);
+}
+
+/* Experience Timeline */
+.experience {
+  min-height: 100vh;
+}
+
+.timeline {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 2rem;
+}
+
+.timeline__line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  stroke: var(--accent);
+  stroke-width: 2px;
+  stroke-dasharray: 1000;
+  /* For drawing animation */
+  stroke-dashoffset: 1000;
+}
+
+.timeline__item {
+  margin-bottom: 5rem;
+  position: relative;
+  opacity: 0.3;
+  /* Default state */
+  transform: translateX(20px);
+  transition: all 0.5s ease;
+}
+
+.timeline__item--active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.timeline__dot {
+  position: absolute;
+  left: -26px;
+  /* Align with line */
+  top: 10px;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.timeline__role {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.timeline__company {
+  display: block;
+  font-family: monospace;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.timeline__desc {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Footer */
+.footer {
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.footer__title {
+  font-size: clamp(3rem, 10vw, 8rem);
+}
+
+.magnetic-btn {
+  display: inline-block;
+  padding: 2rem 4rem;
+  border: 2px solid var(--accent);
+  border-radius: 100px;
+  margin-top: 4rem;
+  text-decoration: none;
+  color: var(--accent);
+  font-family: monospace;
+  font-size: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s;
+}
+
+.magnetic-btn:hover {
+  color: var(--bg-dark);
+}
+
+.magnetic-btn__bg {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  z-index: -1;
+  transition: left 0.3s var(--easing-smooth);
+}
+
+.magnetic-btn:hover .magnetic-btn__bg {
+  left: 0;
+}
+
+.footer__credits {
+  margin-top: 10rem;
+  opacity: 0.5;
+  font-family: monospace;
+}
