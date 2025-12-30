@@ -2,7 +2,8 @@
   --bg-dark: #0E0E0E;
   --surface: #1C1C1C;
   --text-primary: #EDEDED;
-  --text-secondary: #A1A1AA;
+  --text-secondary: #ABABAB;
+  /* WCAG AA compliant: 4.5:1 on #0E0E0E */
   --accent: #60A5FA;
   /* Electric Blue */
   --accent-glow: rgba(96, 165, 250, 0.3);
@@ -519,4 +520,65 @@ section {
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
+}
+
+/* Skip Link (Accessibility) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 2rem;
+  background: var(--accent);
+  color: var(--bg-dark);
+  font-family: var(--font-body);
+  font-weight: 500;
+  text-decoration: none;
+  z-index: 10000;
+  border-radius: 0 0 8px 8px;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* Focus Styles for Accessibility */
+.magnetic-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .project-card {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 50vh;
+    padding: 2rem;
+  }
+
+  .project-card__title {
+    font-size: 2rem;
+  }
+
+  .project-card__visual {
+    min-height: 200px;
+  }
+
+  .about__text {
+    font-size: 1.25rem;
+  }
+
+  .hero__subtitle {
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* Disable noise overlay on mobile for performance */
+  .noise-overlay {
+    display: none;
+  }
 }

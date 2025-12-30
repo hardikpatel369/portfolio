@@ -15,11 +15,14 @@ class ImageTrail {
 
         // Mouse position tracking
         this.mousePos = { x: 0, y: 0 };
-        this.lastPos = { x: 0, y: 0 };
         this.cachePos = { x: 0, y: 0 };
 
         // Threshold for showing new image (distance in pixels)
         this.threshold = 80;
+
+        // Performance: Track visibility state
+        this.isActive = false;
+        this.rafId = null;
 
         // Bind methods
         this.onMouseMove = this.onMouseMove.bind(this);
@@ -31,10 +34,27 @@ class ImageTrail {
     init() {
         // Listen to mouse movement on the hero section
         const hero = this.container.closest('.hero');
+        if (!hero) return;
+
         hero.addEventListener('mousemove', this.onMouseMove);
 
-        // Start render loop
+        // Performance: Use IntersectionObserver to pause RAF when off-screen
+        const observer = new IntersectionObserver((entries) => {
+            this.isActive = entries[0].isIntersecting;
+            if (this.isActive && !this.rafId) {
+                this.startLoop();
+            } else if (!this.isActive && this.rafId) {
+                cancelAnimationFrame(this.rafId);
+                this.rafId = null;
+            }
+        }, { threshold: 0 });
+        observer.observe(hero);
+    }
+
+    startLoop() {
+        if (!this.isActive) return;
         this.render();
+        this.rafId = requestAnimationFrame(() => this.startLoop());
     }
 
     onMouseMove(e) {
@@ -49,6 +69,7 @@ class ImageTrail {
 
     showNextImage() {
         const img = this.images[this.imgIndex];
+        if (!img) return;
 
         // Update z-index for stacking
         this.zIndex++;
@@ -101,9 +122,6 @@ class ImageTrail {
         if (distance > this.threshold) {
             this.showNextImage();
         }
-
-        // Continue render loop
-        requestAnimationFrame(this.render);
     }
 }
 
@@ -123,13 +141,7 @@ const initLenis = () => {
         smooth: true,
     });
 
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    // Sync GSAP with Lenis
+    // Sync GSAP with Lenis (single RAF source - no conflict)
     gsap.ticker.add((time) => {
         lenis.raf(time * 1000);
     });
@@ -289,6 +301,8 @@ const initExperience = () => {
 // 7. Footer Magnetic Button
 const initFooter = () => {
     const btn = document.querySelector('.magnetic-btn');
+    if (!btn) return;  // Error handling: return early if element not found
+
     const text = btn.querySelector('.magnetic-btn__text');
 
     btn.addEventListener('mousemove', (e) => {
@@ -297,11 +311,22 @@ const initFooter = () => {
         const y = e.clientY - rect.top - rect.height / 2;
 
         gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3 });
-        gsap.to(text, { x: x * 0.1, y: y * 0.1, duration: 0.3 });
+        if (text) gsap.to(text, { x: x * 0.1, y: y * 0.1, duration: 0.3 });
     });
 
     btn.addEventListener('mouseleave', () => {
-        gsap.to([btn, text], { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.3)' });
+        gsap.to([btn, text].filter(Boolean), { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.3)' });
+    });
+
+    // Keyboard accessibility: activate on Enter/Space
+    btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            // Trigger the link's default action
+            if (btn.href) {
+                window.location.href = btn.href;
+            }
+        }
     });
 };
 
