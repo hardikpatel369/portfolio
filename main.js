@@ -348,74 +348,125 @@ const initFooter = () => {
 
 // 9. Dynamic Hero Images & Favicon
 const initHeroImages = () => {
-    // Load all images (jpg, png, svg, webp) from assets/hero directory
-    // { eager: true } imports them immediately
-    // Vite handles asset URLs automatically
-    const imagesGlob = import.meta.glob('/assets/hero/*.{jpg,jpeg,png,webp,svg}', { eager: true });
+    return new Promise((resolveAll) => {
+        // Load all images (jpg, png, svg, webp) from assets/hero directory
+        // { eager: true } imports them immediately
+        // Vite handles asset URLs automatically
+        const imagesGlob = import.meta.glob('/assets/hero/*.{jpg,jpeg,png,webp,svg}', { eager: true });
 
-    // Extract URLs (handling both direct string and module.default formats)
-    const imageUrls = Object.values(imagesGlob).map(mod => {
-        // If imports as module with default export (typical for assets)
-        return typeof mod === 'object' && mod.default ? mod.default : mod;
-    });
-
-    if (imageUrls.length === 0) return;
-
-    // 1. Set Tab Bar Image (Favicon) to the FIRST image
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-    }
-    link.href = imageUrls[0];
-
-    // 2. Populate Image Trail with these images
-    const trailContainer = document.getElementById('image-trail');
-    if (trailContainer) {
-        // Clear hardcoded Unsplash placeholders
-        trailContainer.innerHTML = '';
-
-        // Inject new local assets
-        imageUrls.forEach(url => {
-            const img = document.createElement('img');
-            img.className = 'image-trail__img';
-            img.src = url;
-            img.alt = 'Hero Background';
-            img.setAttribute('role', 'presentation');
-            trailContainer.appendChild(img);
+        // Extract URLs (handling both direct string and module.default formats)
+        const imageUrls = Object.values(imagesGlob).map(mod => {
+            return typeof mod === 'object' && mod.default ? mod.default : mod;
         });
-    }
+
+        if (imageUrls.length === 0) {
+            resolveAll();
+            return;
+        }
+
+        // 1. Set Tab Bar Image (Favicon) to the FIRST image
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = imageUrls[0];
+
+        // 2. Populate Image Trail with these images
+        const trailContainer = document.getElementById('image-trail');
+        if (trailContainer) {
+            // Clear hardcoded Unsplash placeholders
+            trailContainer.innerHTML = '';
+
+            // Create a promise for each image loading
+            const imagePromises = imageUrls.map(url => {
+                const img = document.createElement('img');
+                img.className = 'image-trail__img';
+                img.alt = 'Hero Background';
+                img.setAttribute('role', 'presentation');
+                img.src = url;
+
+                // robust decoding: ensure image is paint-ready before DOM insertion
+                if ('decode' in img) {
+                    return img.decode()
+                        .then(() => {
+                            trailContainer.appendChild(img);
+                        })
+                        .catch((err) => {
+                            console.warn(`Image decode failed for ${url}, falling back.`, err);
+                            trailContainer.appendChild(img);
+                        });
+                } else {
+                    // Fallback for older browsers (unlikely needed but safe)
+                    return new Promise((resolve) => {
+                        img.onload = () => {
+                            trailContainer.appendChild(img);
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            trailContainer.appendChild(img);
+                            resolve();
+                        };
+                    });
+                }
+            });
+
+            // Wait for all images to settle
+            Promise.all(imagePromises).then(() => {
+                resolveAll();
+            });
+
+        } else {
+            resolveAll();
+        }
+    });
 };
 
 // Master Init
 window.addEventListener('DOMContentLoaded', () => {
-    // Initialize standard assets dynamically
-    initHeroImages();
-
     // Lock scroll during loading animation
     document.documentElement.classList.add('is-loading');
     window.scrollTo(0, 0);
 
-    // DON'T initialize Lenis here - it bypasses CSS overflow:hidden
-    // We'll init it after preloader finishes
+    // 1. Initialize standard assets dynamically & return Promise
+    const imagesLoadedPromise = initHeroImages();
 
-    // Signature Preloader Animation
+    // 2. Signature Preloader Setup
     const preloader = document.querySelector('.preloader');
     const signaturePath = document.getElementById('sig-path');
 
-    // Helper function to unlock scroll and initialize site
-    const unlockAndInit = () => {
-        // Reset scroll to top before unlocking
-        window.scrollTo(0, 0);
+    // Create a promise for the signature animation
+    const signatureAnimationPromise = new Promise((resolve) => {
+        if (!signaturePath) {
+            resolve(); // Resolve immediately if no signature
+            return;
+        }
 
-        // Remove loading lock
+        // Setup CSS variables for path length
+        const pathLength = signaturePath.getTotalLength();
+        signaturePath.style.setProperty('--path-length', pathLength);
+        signaturePath.style.strokeDasharray = pathLength;
+        signaturePath.style.strokeDashoffset = pathLength;
+
+        // Listen for animation completion
+        signaturePath.addEventListener('animationend', () => {
+            // Keep it glowing while we might be waiting for images
+            signaturePath.classList.add('drawn');
+            // Resolve the visual part of the loading
+            resolve();
+        }, { once: true });
+    });
+
+    // 3. Helper to unlock and start the site
+    const unlockAndInit = () => {
+        window.scrollTo(0, 0);
         document.documentElement.classList.remove('is-loading');
 
-        // NOW initialize Lenis smooth scroll (after loading is complete)
+        // Initialize Lenis exactly when needed
         initLenis();
 
-        // Initialize all site components
+        // Start all site logic
         initImageTrail();
         initHero();
         initAbout();
@@ -426,40 +477,34 @@ window.addEventListener('DOMContentLoaded', () => {
         initFooter();
     };
 
-    if (signaturePath) {
-        // Calculate actual path length and set CSS variable
-        const pathLength = signaturePath.getTotalLength();
-        signaturePath.style.setProperty('--path-length', pathLength);
-        signaturePath.style.strokeDasharray = pathLength;
-        signaturePath.style.strokeDashoffset = pathLength;
-
-        // Listen for animation end to add glow effect
-        signaturePath.addEventListener('animationend', () => {
-            signaturePath.classList.add('drawn');
-
-            // Wait a moment with the glow, then start transition
+    // 4. Wait for BOTH: Images Loaded AND Signature Drawn
+    Promise.all([imagesLoadedPromise, signatureAnimationPromise])
+        .then(() => {
+            // Add a small buffer for the "glow" to be appreciated or to smooth the transition
             setTimeout(() => {
+                // Determine if we need to start the exit sequence
+                // The signature might be glowing.
+
+                // 1. Fade out the whole preloader container
                 preloader.classList.add('fade-out');
 
-                // Initialize site components as the signature transitions
+                // 2. Schedule the site unlock to happen during the fade for smoothness
+                // (Start revealing content while veil lifts)
                 setTimeout(() => {
                     unlockAndInit();
-                }, 400); // Start hero animation while signature is still visible
+                }, 400);
 
-                // Remove preloader from DOM after animation completes
+                // 3. Remove preloader from DOM
                 setTimeout(() => {
                     preloader.style.display = 'none';
-                }, 1200); // Match the signature-exit animation duration
-            }, 600); // Glow effect duration before exit
-        });
-    } else {
-        // Fallback: if no signature path, just proceed
-        setTimeout(() => {
+                }, 1200);
+
+            }, 600); // 600ms buffer after both are ready
+        })
+        .catch((err) => {
+            console.warn("Loading issue:", err);
+            // Fallback: force open if something fails
             preloader.classList.add('fade-out');
-            setTimeout(() => {
-                preloader.style.display = 'none';
-                unlockAndInit();
-            }, 1000);
-        }, 2000);
-    }
+            setTimeout(unlockAndInit, 1000);
+        });
 });
