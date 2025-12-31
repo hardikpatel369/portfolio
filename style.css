@@ -1,14 +1,21 @@
 :root {
+  /* Colors */
   --bg-dark: #0E0E0E;
   --surface: #1C1C1C;
   --text-primary: #EDEDED;
   --text-secondary: #ABABAB;
-  /* WCAG AA compliant: 4.5:1 on #0E0E0E */
+  --text-highlight: #E0DDD8;
+  /* Warm off-white for subtle emphasis */
+
+  /* Legacy accent - consider removing if not used */
   --accent: #60A5FA;
-  /* Electric Blue */
   --accent-glow: rgba(96, 165, 250, 0.3);
+
+  /* Typography */
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
+
+  /* Animation */
   --easing-smooth: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -390,8 +397,11 @@ section {
   padding: 1rem 2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 100px;
-  font-family: monospace;
-  font-size: 1.2rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   transition: all 0.3s var(--easing-smooth);
   background: transparent;
 }
@@ -465,8 +475,11 @@ section {
   color: var(--text-secondary);
   border-radius: 50px;
   margin-right: 0.5rem;
-  font-size: 0.9rem;
-  font-family: monospace;
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .project-card__visual {
@@ -533,8 +546,12 @@ section {
 
 .timeline__company {
   display: block;
-  font-family: monospace;
-  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-highlight);
   margin-bottom: 1rem;
 }
 
