@@ -346,8 +346,53 @@ const initFooter = () => {
 
 
 
+// 9. Dynamic Hero Images & Favicon
+const initHeroImages = () => {
+    // Load all images (jpg, png, svg, webp) from assets/hero directory
+    // { eager: true } imports them immediately
+    // Vite handles asset URLs automatically
+    const imagesGlob = import.meta.glob('/assets/hero/*.{jpg,jpeg,png,webp,svg}', { eager: true });
+
+    // Extract URLs (handling both direct string and module.default formats)
+    const imageUrls = Object.values(imagesGlob).map(mod => {
+        // If imports as module with default export (typical for assets)
+        return typeof mod === 'object' && mod.default ? mod.default : mod;
+    });
+
+    if (imageUrls.length === 0) return;
+
+    // 1. Set Tab Bar Image (Favicon) to the FIRST image
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = imageUrls[0];
+
+    // 2. Populate Image Trail with these images
+    const trailContainer = document.getElementById('image-trail');
+    if (trailContainer) {
+        // Clear hardcoded Unsplash placeholders
+        trailContainer.innerHTML = '';
+
+        // Inject new local assets
+        imageUrls.forEach(url => {
+            const img = document.createElement('img');
+            img.className = 'image-trail__img';
+            img.src = url;
+            img.alt = 'Hero Background';
+            img.setAttribute('role', 'presentation');
+            trailContainer.appendChild(img);
+        });
+    }
+};
+
 // Master Init
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize standard assets dynamically
+    initHeroImages();
+
     // Lock scroll during loading animation
     document.documentElement.classList.add('is-loading');
     window.scrollTo(0, 0);
