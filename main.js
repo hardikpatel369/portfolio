@@ -326,22 +326,24 @@ const initSVGStroke = () => {
     const path = document.getElementById("stroke-path");
     if (!path) return;
 
-    // Get length
+    // 1. Prepare the path length
     const pathLength = path.getTotalLength();
 
-    // Use fromTo to ensure initial state is locked
-    // Use fromTo to ensure initial state is locked
-    gsap.fromTo(path, {
+    // 2. Set initial state (Hidden)
+    gsap.set(path, {
         strokeDasharray: pathLength,
         strokeDashoffset: pathLength
-    }, {
+    });
+
+    // 3. Animate based on TOTAL page scroll
+    gsap.to(path, {
         strokeDashoffset: 0,
         ease: "none",
         scrollTrigger: {
-            trigger: ".about",
-            start: "top 50%",
-            end: "bottom bottom",
-            scrub: 1,
+            trigger: "body",       // Track the whole body
+            start: "top top",      // Start when top of body hits top of viewport
+            end: "bottom bottom",  // End when bottom of body hits bottom of viewport
+            scrub: 1,              // Smooth scrubbing (1s lag for fluid feel)
         }
     });
 };
