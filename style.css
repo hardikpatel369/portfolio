@@ -71,33 +71,125 @@ h4 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #000;
+  background-color: var(--bg-dark);
   z-index: 9999;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: var(--accent);
-  font-family: monospace;
+  gap: 2rem;
 }
 
-.preloader__terminal {
-  font-size: 1.5rem;
-  display: flex;
-  margin-bottom: 2rem;
-}
-
-.preloader__bar-container {
-  width: 300px;
-  height: 2px;
-  background-color: #333;
-  overflow: hidden;
-}
-
-.preloader__bar {
-  width: 0%;
+/* Noise texture for preloader to match hero */
+.preloader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  background-color: var(--accent);
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.preloader__signature {
+  width: 80%;
+  max-width: 400px;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.15));
+}
+
+.signature-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.signature-path {
+  --path-length: 975;
+  stroke-dasharray: var(--path-length);
+  stroke-dashoffset: var(--path-length);
+  animation: signature-draw 3s ease-in-out forwards;
+}
+
+@keyframes signature-draw {
+  0% {
+    stroke-dashoffset: var(--path-length);
+    opacity: 0.3;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Signature Glow Pulse after drawing */
+.signature-path.drawn {
+  animation: signature-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes signature-glow {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 50px rgba(255, 255, 255, 0.15));
+  }
+}
+
+
+
+/* Preloader exit animation - fade background only */
+.preloader.fade-out {
+  animation: preloader-exit 1.2s var(--easing-smooth) forwards;
+}
+
+.preloader.fade-out::before {
+  animation: noise-fade 0.8s ease-out forwards;
+}
+
+.preloader.fade-out .preloader__signature {
+  animation: signature-exit 1.2s var(--easing-smooth) forwards;
+}
+
+@keyframes preloader-exit {
+  0% {
+    background-color: var(--bg-dark);
+  }
+
+  100% {
+    background-color: transparent;
+    pointer-events: none;
+  }
+}
+
+@keyframes noise-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes signature-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
 }
 
 /* Layout */
@@ -301,15 +393,14 @@ section {
   font-family: monospace;
   font-size: 1.2rem;
   transition: all 0.3s var(--easing-smooth);
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(5px);
+  background: transparent;
 }
 
 .skill-tag:hover {
-  background: var(--accent);
+  background: var(--text-primary);
   color: var(--bg-dark);
-  border-color: var(--accent);
-  box-shadow: 0 0 30px var(--accent-glow);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
   transform: scale(1.1) translateZ(20px);
 }
 
@@ -370,8 +461,8 @@ section {
 .project-card__tags span {
   display: inline-block;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
   border-radius: 50px;
   margin-right: 0.5rem;
   font-size: 0.9rem;
@@ -459,7 +550,7 @@ section {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 8rem 0;
+  padding: 0 0;
 }
 
 .footer__container {
@@ -489,16 +580,16 @@ section {
 }
 
 .footer__cta-wrapper {
-  margin-bottom: 8rem;
+  margin-bottom: 5rem;
 }
 
 .magnetic-btn {
   display: inline-block;
   padding: 1.75rem 4rem;
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 100px;
   text-decoration: none;
-  color: var(--accent);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 400;
@@ -511,7 +602,7 @@ section {
 
 .magnetic-btn:hover {
   color: var(--bg-dark);
-  border-color: var(--accent);
+  border-color: var(--text-primary);
 }
 
 .magnetic-btn__bg {
@@ -520,7 +611,7 @@ section {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: var(--accent);
+  background: var(--text-primary);
   z-index: -1;
   transition: left 0.4s var(--easing-smooth);
 }

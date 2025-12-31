@@ -326,42 +326,57 @@ const initFooter = () => {
 // Master Init
 window.addEventListener('DOMContentLoaded', () => {
     initLenis();
-    // Simulate Preloader typing manually for simplicity in this artifact
-    const textElement = document.getElementById('preloader-text');
-    let step = 0;
-    const steps = [
-        "> CONNECTING TO DATABASE...",
-        "> LOADING JAVA MODULES...",
-        "> INITIALIZING CREATIVE ENGINE...",
-        "> ACCESS GRANTED."
-    ];
 
-    const typeWriter = () => {
-        if (step < steps.length) {
-            textElement.textContent = steps[step];
-            step++;
-            setTimeout(typeWriter, 800);
-        } else {
-            // Finish
-            gsap.to('.preloader', {
-                yPercent: -100,
-                duration: 1.5,
-                ease: 'power4.inOut',
-                delay: 0.5,
-                onComplete: () => {
+    // Signature Preloader Animation
+    const preloader = document.querySelector('.preloader');
+    const signaturePath = document.getElementById('sig-path');
+
+    if (signaturePath) {
+        // Calculate actual path length and set CSS variable
+        const pathLength = signaturePath.getTotalLength();
+        signaturePath.style.setProperty('--path-length', pathLength);
+        signaturePath.style.strokeDasharray = pathLength;
+        signaturePath.style.strokeDashoffset = pathLength;
+
+        // Listen for animation end to add glow effect
+        signaturePath.addEventListener('animationend', () => {
+            signaturePath.classList.add('drawn');
+
+            // Wait a moment with the glow, then start transition
+            setTimeout(() => {
+                preloader.classList.add('fade-out');
+
+                // Initialize site components as the signature transitions
+                setTimeout(() => {
                     initImageTrail();
                     initHero();
                     initAbout();
                     initSkills();
                     initProjects();
                     initExperience();
-
                     initFooter();
+                }, 400); // Start hero animation while signature is still visible
 
-                }
-            });
-        }
-    };
-
-    typeWriter();
+                // Remove preloader from DOM after animation completes
+                setTimeout(() => {
+                    preloader.style.display = 'none';
+                }, 1200); // Match the signature-exit animation duration
+            }, 600); // Glow effect duration before exit
+        });
+    } else {
+        // Fallback: if no signature path, just proceed
+        setTimeout(() => {
+            preloader.classList.add('fade-out');
+            setTimeout(() => {
+                preloader.style.display = 'none';
+                initImageTrail();
+                initHero();
+                initAbout();
+                initSkills();
+                initProjects();
+                initExperience();
+                initFooter();
+            }, 1000);
+        }, 2000);
+    }
 });
