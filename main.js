@@ -141,44 +141,12 @@ const initLenis = () => {
         smooth: true,
     });
 
+    lenis.on('scroll', ScrollTrigger.update);
     // Sync GSAP with Lenis (single RAF source - no conflict)
     gsap.ticker.add((time) => {
         lenis.raf(time * 1000);
     });
     gsap.ticker.lagSmoothing(0);
-};
-
-// 1. Preloader
-const initPreloader = () => {
-    const textElement = document.getElementById('preloader-text');
-    const texts = [
-        "> CONNECTING TO DATABASE...",
-        "> LOADING JAVA MODULES...",
-        "> INITIALIZING CREATIVE ENGINE...",
-        "> ACCESS GRANTED."
-    ];
-
-    let tl = gsap.timeline({
-        onComplete: () => {
-            // Curtain Reveal
-            gsap.to('.preloader', {
-                yPercent: -100,
-                duration: 1.5,
-                ease: 'power4.inOut',
-                delay: 0.5
-            });
-            // Trigger Hero Animation after preloader
-            initHero();
-        }
-    });
-
-    texts.forEach((text, i) => {
-        tl.to(textElement, {
-            text: text, // Requires TextPlugin usually, but doing Typewriter manually is safer without extra plugin load if not installed.
-            duration: 0.1, // fast dummy
-            onStart: () => { textElement.textContent = text; }
-        }).to({}, { duration: 0.8 }) // wait
-    });
 };
 
 // 2. Hero Animation
@@ -319,37 +287,9 @@ const initExperience = () => {
     });
 };
 
-// 7. Scroll-Driven SVG Path Animation
-const initScrollPath = () => {
-    const path = document.querySelector('.scroll-path__line');
-    // Safety check
-    if (!path) return;
 
-    // 1. Calculate the total length of the SVG path
-    const length = path.getTotalLength();
 
-    // 2. Set initial CSS states to hide the stroke completely
-    gsap.set(path, {
-        strokeDasharray: length,
-        strokeDashoffset: length,
-    });
-
-    // 3. Animate stroke offset from length (hidden) to 0 (fully revealed)
-    //    based on total scroll distance of smooth-content
-    gsap.to(path, {
-        strokeDashoffset: 0,
-        ease: 'none', // Linear is crucial for smooth scrub syncing
-        scrollTrigger: {
-            trigger: '#smooth-content', // Uses the main wrapper height
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1, // Smoothness factor (1 = 1 second catch-up)
-            // markers: true // Enable for debugging if needed
-        }
-    });
-};
-
-// 8. Footer Magnetic Button
+// 7. Footer Magnetic Button
 const initFooter = () => {
     const btn = document.querySelector('.magnetic-btn');
     if (!btn) return;  // Error handling: return early if element not found
@@ -377,6 +317,31 @@ const initFooter = () => {
             if (btn.href) {
                 window.location.href = btn.href;
             }
+        }
+    });
+};
+
+// 8. SVG Path Drawing
+const initSVGStroke = () => {
+    const path = document.getElementById("stroke-path");
+    if (!path) return;
+
+    // Get length
+    const pathLength = path.getTotalLength();
+
+    // Use fromTo to ensure initial state is locked
+    // Use fromTo to ensure initial state is locked
+    gsap.fromTo(path, {
+        strokeDasharray: pathLength,
+        strokeDashoffset: pathLength
+    }, {
+        strokeDashoffset: 0,
+        ease: "none",
+        scrollTrigger: {
+            trigger: ".about",
+            start: "top 50%",
+            end: "bottom bottom",
+            scrub: 1,
         }
     });
 };
@@ -413,8 +378,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     initSkills();
                     initProjects();
                     initExperience();
+                    initSVGStroke();
                     initFooter();
-                    initScrollPath(); // Initialize the scroll-driven SVG path
+
                 }
             });
         }
