@@ -321,32 +321,7 @@ const initFooter = () => {
     });
 };
 
-// 8. SVG Path Drawing
-const initSVGStroke = () => {
-    const path = document.getElementById("stroke-path");
-    if (!path) return;
 
-    // 1. Prepare the path length
-    const pathLength = path.getTotalLength();
-
-    // 2. Set initial state (Hidden)
-    gsap.set(path, {
-        strokeDasharray: pathLength,
-        strokeDashoffset: pathLength
-    });
-
-    // 3. Animate based on TOTAL page scroll
-    gsap.to(path, {
-        strokeDashoffset: 0,
-        ease: "none",
-        scrollTrigger: {
-            trigger: "body",       // Track the whole body
-            start: "top top",      // Start when top of body hits top of viewport
-            end: "bottom bottom",  // End when bottom of body hits bottom of viewport
-            scrub: 1,              // Smooth scrubbing (1s lag for fluid feel)
-        }
-    });
-};
 
 // Master Init
 window.addEventListener('DOMContentLoaded', () => {
@@ -380,7 +355,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     initSkills();
                     initProjects();
                     initExperience();
-                    initSVGStroke();
+
                     initFooter();
 
                 }
