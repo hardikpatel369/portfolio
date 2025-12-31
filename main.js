@@ -264,18 +264,8 @@ const initProjects = () => {
 
 // 6. Experience Section (Animated Cards)
 const initExperience = () => {
-    const header = document.querySelector('.experience__header');
     const line = document.querySelector('.experience__line');
     const cards = document.querySelectorAll('.exp-card');
-
-    // Header animation (title with scale and blur)
-    ScrollTrigger.create({
-        trigger: header,
-        start: 'top 85%',
-        toggleActions: 'play none none reset',
-        onEnter: () => header.classList.add('is-visible'),
-        onLeaveBack: () => header.classList.remove('is-visible')
-    });
 
     // Animated line drawing
     ScrollTrigger.create({
@@ -306,9 +296,23 @@ const initExperience = () => {
     });
 };
 
+// 7. Section Titles Animation (Global)
+const initSectionTitles = () => {
+    const titles = document.querySelectorAll('.section-title');
+    titles.forEach(title => {
+        ScrollTrigger.create({
+            trigger: title,
+            start: 'top 85%',
+            toggleActions: 'play none none reset',
+            onEnter: () => title.classList.add('is-visible'),
+            onLeaveBack: () => title.classList.remove('is-visible')
+        });
+    });
+};
 
 
-// 7. Footer Magnetic Button
+
+// 8. Footer Magnetic Button
 const initFooter = () => {
     const btn = document.querySelector('.magnetic-btn');
     if (!btn) return;  // Error handling: return early if element not found
@@ -373,6 +377,7 @@ window.addEventListener('DOMContentLoaded', () => {
         initSkills();
         initProjects();
         initExperience();
+        initSectionTitles();
         initFooter();
     };
 
