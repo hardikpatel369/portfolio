@@ -133,20 +133,24 @@ const initImageTrail = () => {
     }
 };
 
-// Initialize Lenis (Smooth Scroll)
+// Initialize Lenis (Smooth Scroll) - Returns the instance for control
+let lenisInstance = null;
+
 const initLenis = () => {
-    const lenis = new Lenis({
+    lenisInstance = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smooth: true,
     });
 
-    lenis.on('scroll', ScrollTrigger.update);
+    lenisInstance.on('scroll', ScrollTrigger.update);
     // Sync GSAP with Lenis (single RAF source - no conflict)
     gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
+        lenisInstance.raf(time * 1000);
     });
     gsap.ticker.lagSmoothing(0);
+
+    return lenisInstance;
 };
 
 // 2. Hero Animation
@@ -325,11 +329,37 @@ const initFooter = () => {
 
 // Master Init
 window.addEventListener('DOMContentLoaded', () => {
-    initLenis();
+    // Lock scroll during loading animation
+    document.documentElement.classList.add('is-loading');
+    window.scrollTo(0, 0);
+
+    // DON'T initialize Lenis here - it bypasses CSS overflow:hidden
+    // We'll init it after preloader finishes
 
     // Signature Preloader Animation
     const preloader = document.querySelector('.preloader');
     const signaturePath = document.getElementById('sig-path');
+
+    // Helper function to unlock scroll and initialize site
+    const unlockAndInit = () => {
+        // Reset scroll to top before unlocking
+        window.scrollTo(0, 0);
+
+        // Remove loading lock
+        document.documentElement.classList.remove('is-loading');
+
+        // NOW initialize Lenis smooth scroll (after loading is complete)
+        initLenis();
+
+        // Initialize all site components
+        initImageTrail();
+        initHero();
+        initAbout();
+        initSkills();
+        initProjects();
+        initExperience();
+        initFooter();
+    };
 
     if (signaturePath) {
         // Calculate actual path length and set CSS variable
@@ -348,13 +378,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 // Initialize site components as the signature transitions
                 setTimeout(() => {
-                    initImageTrail();
-                    initHero();
-                    initAbout();
-                    initSkills();
-                    initProjects();
-                    initExperience();
-                    initFooter();
+                    unlockAndInit();
                 }, 400); // Start hero animation while signature is still visible
 
                 // Remove preloader from DOM after animation completes
@@ -369,13 +393,7 @@ window.addEventListener('DOMContentLoaded', () => {
             preloader.classList.add('fade-out');
             setTimeout(() => {
                 preloader.style.display = 'none';
-                initImageTrail();
-                initHero();
-                initAbout();
-                initSkills();
-                initProjects();
-                initExperience();
-                initFooter();
+                unlockAndInit();
             }, 1000);
         }, 2000);
     }

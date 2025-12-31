@@ -71,6 +71,13 @@ h4 {
   text-align: center;
 }
 
+/* Scroll Lock During Loading */
+html.is-loading,
+html.is-loading body {
+  overflow: hidden !important;
+  height: 100%;
+}
+
 /* Preloader */
 .preloader {
   position: fixed;
@@ -670,7 +677,7 @@ section {
 
 /* Focus Styles for Accessibility */
 .magnetic-btn:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 4px;
 }
 
