@@ -262,31 +262,46 @@ const initProjects = () => {
     });
 };
 
-// 6. Experience Timeline (Draw Line)
+// 6. Experience Section (Animated Cards)
 const initExperience = () => {
-    // Draw Line
-    gsap.from('.timeline__line line', {
-        strokeDashoffset: 1000,
-        scrollTrigger: {
-            trigger: '.experience',
-            start: 'top center',
-            end: 'bottom center',
-            scrub: 1
-        }
+    const header = document.querySelector('.experience__header');
+    const line = document.querySelector('.experience__line');
+    const cards = document.querySelectorAll('.exp-card');
+
+    // Header animation (title with scale and blur)
+    ScrollTrigger.create({
+        trigger: header,
+        start: 'top 85%',
+        toggleActions: 'play none none reset',
+        onEnter: () => header.classList.add('is-visible'),
+        onLeaveBack: () => header.classList.remove('is-visible')
     });
 
-    // Reveal Items
-    const items = document.querySelectorAll('.timeline__item');
-    items.forEach(item => {
-        gsap.to(item, {
-            opacity: 1,
-            x: 0,
-            scrollTrigger: {
-                trigger: item,
-                start: 'top 80%',
-                end: 'top 50%',
-                toggleActions: 'play none none reverse'
-            }
+    // Animated line drawing
+    ScrollTrigger.create({
+        trigger: '.experience__grid',
+        start: 'top 80%',
+        toggleActions: 'play none none reset',
+        onEnter: () => line.classList.add('is-visible'),
+        onLeaveBack: () => line.classList.remove('is-visible')
+    });
+
+    // Experience cards with staggered reveal and 3D transforms
+    cards.forEach((card, index) => {
+        // Stagger delay based on card index
+        const delay = index * 0.15;
+
+        ScrollTrigger.create({
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none reset',
+            onEnter: () => {
+                // Add delay for staggered effect
+                setTimeout(() => {
+                    card.classList.add('is-visible');
+                }, delay * 1000);
+            },
+            onLeaveBack: () => card.classList.remove('is-visible')
         });
     });
 };
