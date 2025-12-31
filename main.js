@@ -319,7 +319,37 @@ const initExperience = () => {
     });
 };
 
-// 7. Footer Magnetic Button
+// 7. Scroll-Driven SVG Path Animation
+const initScrollPath = () => {
+    const path = document.querySelector('.scroll-path__line');
+    // Safety check
+    if (!path) return;
+
+    // 1. Calculate the total length of the SVG path
+    const length = path.getTotalLength();
+
+    // 2. Set initial CSS states to hide the stroke completely
+    gsap.set(path, {
+        strokeDasharray: length,
+        strokeDashoffset: length,
+    });
+
+    // 3. Animate stroke offset from length (hidden) to 0 (fully revealed)
+    //    based on total scroll distance of smooth-content
+    gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: 'none', // Linear is crucial for smooth scrub syncing
+        scrollTrigger: {
+            trigger: '#smooth-content', // Uses the main wrapper height
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1, // Smoothness factor (1 = 1 second catch-up)
+            // markers: true // Enable for debugging if needed
+        }
+    });
+};
+
+// 8. Footer Magnetic Button
 const initFooter = () => {
     const btn = document.querySelector('.magnetic-btn');
     if (!btn) return;  // Error handling: return early if element not found
@@ -384,6 +414,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     initProjects();
                     initExperience();
                     initFooter();
+                    initScrollPath(); // Initialize the scroll-driven SVG path
                 }
             });
         }
