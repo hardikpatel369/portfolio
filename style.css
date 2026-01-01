@@ -917,7 +917,8 @@ section {
 }
 
 .footer__cta-wrapper {
-  margin-bottom: clamp(2rem, 4vh, 4rem);
+  margin-bottom: clamp(3rem, 6vh, 6rem);
+  /* Increased spacing for desktop */
 }
 
 .magnetic-btn {
@@ -1507,7 +1508,8 @@ section {
   }
 
   .footer__cta-wrapper {
-    margin-bottom: clamp(1rem, 2vh, 1.5rem);
+    margin-bottom: clamp(2rem, 4vh, 3rem);
+    /* Increased spacing for small mobile */
   }
 
   .magnetic-btn {
