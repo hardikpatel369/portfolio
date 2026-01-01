@@ -5,7 +5,7 @@ import SplitType from 'split-type';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Image Trail Effect Class
+// Image Trail Effect Class - Desktop (Mouse-based)
 class ImageTrail {
     constructor(container) {
         this.container = container;
@@ -125,14 +125,125 @@ class ImageTrail {
     }
 }
 
-// Initialize Image Trail (skip on touch devices for performance)
-const initImageTrail = () => {
-    // Skip on touch devices - CSS also hides it via pointer:coarse
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-    if (isTouchDevice) return;
+// Touch Image Burst Effect Class - Mobile/Tablet (Tap-based)
+class TouchImageBurst {
+    constructor(container) {
+        this.container = container;
+        this.images = [...container.querySelectorAll('.image-trail__img')];
+        this.imgIndex = 0;
+        this.zIndex = 1;
+        this.isAnimating = false;
 
+        // Bind methods
+        this.onTap = this.onTap.bind(this);
+
+        this.init();
+    }
+
+    init() {
+        const hero = this.container.closest('.hero');
+        if (!hero) return;
+
+        // Listen for touch/click events
+        hero.addEventListener('touchstart', this.onTap, { passive: true });
+        hero.addEventListener('click', this.onTap);
+    }
+
+    onTap(e) {
+        // Prevent double-firing on touch devices
+        if (e.type === 'click' && e.pointerType === 'touch') return;
+
+        // Get tap position
+        let x, y;
+        if (e.touches && e.touches[0]) {
+            const rect = this.container.getBoundingClientRect();
+            x = e.touches[0].clientX - rect.left;
+            y = e.touches[0].clientY - rect.top;
+        } else {
+            const rect = this.container.getBoundingClientRect();
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+        }
+
+        // Create burst effect - show 3-5 images in a radial pattern
+        this.createBurst(x, y);
+    }
+
+    createBurst(centerX, centerY) {
+        const burstCount = gsap.utils.random(3, 5, 1); // 3-5 images per tap
+        const baseDelay = 0;
+
+        for (let i = 0; i < burstCount; i++) {
+            // Stagger each image slightly
+            setTimeout(() => {
+                this.showImageAtPosition(centerX, centerY, i, burstCount);
+            }, i * 80);
+        }
+    }
+
+    showImageAtPosition(centerX, centerY, burstIndex, totalBurst) {
+        const img = this.images[this.imgIndex];
+        if (!img) return;
+
+        // Update z-index
+        this.zIndex++;
+        img.style.zIndex = this.zIndex;
+
+        // Calculate offset position in a radial pattern
+        const angle = (burstIndex / totalBurst) * Math.PI * 2 + gsap.utils.random(-0.3, 0.3);
+        const radius = gsap.utils.random(40, 120);
+        const offsetX = centerX + Math.cos(angle) * radius;
+        const offsetY = centerY + Math.sin(angle) * radius;
+
+        // Random rotation
+        const rotation = gsap.utils.random(-25, 25);
+        const scale = gsap.utils.random(0.8, 1.2);
+
+        // Set initial position (from center, scaled down)
+        gsap.set(img, {
+            x: centerX,
+            y: centerY,
+            rotation: 0,
+            scale: 0,
+            opacity: 0
+        });
+
+        // Animate: burst outward, then fade
+        gsap.timeline()
+            .to(img, {
+                x: offsetX,
+                y: offsetY,
+                rotation: rotation,
+                scale: scale,
+                opacity: 1,
+                duration: 0.5,
+                ease: 'power3.out'
+            })
+            .to(img, {
+                opacity: 0,
+                scale: scale * 0.5,
+                y: offsetY + 30, // slight drop
+                duration: 0.6,
+                ease: 'power2.in'
+            }, '+=0.2');
+
+        // Cycle to next image
+        this.imgIndex = (this.imgIndex + 1) % this.images.length;
+    }
+}
+
+// Initialize Image Trail - Both mouse and touch/click support on all devices
+const initImageTrail = () => {
     const container = document.getElementById('image-trail');
-    if (container) {
+    if (!container) return;
+
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+    // Always initialize touch/click burst for taps and clicks
+    new TouchImageBurst(container);
+
+    // Also initialize mouse trail on non-touch devices
+    if (!isTouchDevice) {
         new ImageTrail(container);
     }
 };

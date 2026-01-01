@@ -1577,9 +1577,10 @@ section {
    =================================== */
 @media (pointer: coarse) {
 
-  /* Disable image trail on touch devices for performance */
-  .image-trail {
-    display: none !important;
+  /* Image trail now supports touch - adjust image size for mobile */
+  .image-trail__img {
+    width: 140px;
+    height: 140px;
   }
 
   /* Remove hover-dependent micro-interactions */
