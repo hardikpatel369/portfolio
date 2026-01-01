@@ -12,7 +12,7 @@
   --accent-glow: rgba(96, 165, 250, 0.3);
 
   /* Typography - Fonts */
-  --font-heading: 'Space Grotesk', sans-serif;
+  --font-heading: 'Oswald', sans-serif;
   --font-body: 'Inter', sans-serif;
 
   /* Typography Scale - UNIFIED SIZES */
@@ -275,6 +275,8 @@ section {
 .hero__line {
   display: block;
   overflow: hidden;
+  padding: 0 0.2em;
+  /* Prevents cropping of letters like 'K' */
   /* For Reveal */
 }
 
@@ -973,7 +975,7 @@ section {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
   max-width: 800px;
 }
 
