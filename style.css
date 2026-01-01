@@ -1551,13 +1551,7 @@ section {
     text-align: center;
     word-break: break-all;
     display: none;
-  }
-
-  /* Only show short labels on small mobile */
-  .contact-link:nth-child(1) .contact-link__label,
-  .contact-link:nth-child(2) .contact-link__label {
-    display: block;
-    word-break: normal;
+    /* Hide ALL labels on small mobile - icons only */
   }
 
   /* Section Titles */
