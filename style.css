@@ -1511,10 +1511,12 @@ section {
   }
 
   .magnetic-btn {
-    padding: 1rem 2rem;
-    width: calc(100% - 2rem);
-    max-width: 280px;
+    padding: 0.875rem 1.5rem;
+    width: auto;
+    max-width: none;
     text-align: center;
+    white-space: nowrap;
+    /* Keep button text on single line */
   }
 
   .footer__credits {
@@ -1523,10 +1525,13 @@ section {
 
   /* Contact Links - Small Mobile */
   .contact-links {
-    gap: 1rem;
-    margin-bottom: 2.5rem;
+    gap: 0.5rem;
+    /* Closer icons */
+    margin-bottom: 2rem;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    /* Keep all icons in one row */
+    justify-content: center;
   }
 
   .contact-link {
