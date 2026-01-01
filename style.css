@@ -87,6 +87,7 @@ h4 {
   transform: translateY(40px) scale(0.95);
   filter: blur(10px);
   will-change: opacity, transform, filter;
+  transition: opacity 1s var(--easing-smooth), transform 1s var(--easing-smooth), filter 1s var(--easing-smooth);
 }
 
 .section-title.is-visible {
@@ -569,6 +570,7 @@ section {
   margin-bottom: 1rem;
   opacity: 0;
   transform: translateY(20px);
+  transition: opacity 0.8s var(--easing-smooth), transform 0.8s var(--easing-smooth);
 }
 
 
@@ -596,6 +598,7 @@ section {
   opacity: 0.2;
   transform-origin: top;
   transform: scaleY(0);
+  transition: transform 1.5s var(--easing-smooth);
 }
 
 /* Cards Container */
@@ -620,7 +623,8 @@ section {
   transition:
     border-color 0.4s var(--easing-smooth),
     box-shadow 0.4s var(--easing-smooth),
-    transform 0.3s var(--easing-smooth);
+    transform 1s var(--easing-smooth),
+    opacity 1s var(--easing-smooth);
 }
 
 .exp-card:nth-child(even) {
