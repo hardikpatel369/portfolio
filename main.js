@@ -214,17 +214,9 @@ const initHero = () => {
     });
 };
 
-// 3. Horizontal Scroll (About) - Disabled on mobile
+// 3. Horizontal Scroll (About) - Works on all devices
 const initAbout = () => {
     const track = document.querySelector('.about__track');
-
-    // Skip horizontal scroll on mobile (≤768px) - CSS handles vertical layout
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobile) {
-        // Ensure no residual transforms on mobile
-        gsap.set(track, { xPercent: 0, clearProps: 'all' });
-        return;
-    }
 
     gsap.to(track, {
         xPercent: -66.666, // Move 2/3rds (since 3 panels)

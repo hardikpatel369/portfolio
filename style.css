@@ -1047,33 +1047,14 @@ section {
 /* Mobile Large & Phablet - up to 768px */
 @media (max-width: 768px) {
 
-  /* ========== ABOUT SECTION: Vertical Layout ========== */
+  /* ========== ABOUT SECTION: Keep horizontal, just adjust sizing ========== */
   .about {
-    height: auto;
-    min-height: auto;
-  }
-
-  .about__track {
-    flex-direction: column;
-    width: 100%;
-    height: auto;
+    height: 100vh;
+    min-height: 100vh;
   }
 
   .about__panel {
-    width: 100%;
-    height: auto;
-    min-height: auto;
-    padding: 3rem 1.5rem;
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .about__panel:last-child {
-    border-bottom: none;
-  }
-
-  .about__content {
-    max-width: 100%;
+    padding: 2rem 1.5rem;
   }
 
   .about__heading {
@@ -1109,14 +1090,13 @@ section {
     font-size: var(--text-xs);
   }
 
-  /* ========== PROJECTS ========== */
+  /* ========== PROJECTS: Keep sticky for parallax animation ========== */
   .project-card {
-    position: relative;
-    top: auto;
-    height: auto;
-    min-height: auto;
+    /* Keep position: sticky for animation to work */
+    height: 60vh;
+    min-height: 400px;
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     border-radius: 1.5rem;
   }
 
@@ -1135,10 +1115,7 @@ section {
   }
 
   .project-card__visual {
-    min-height: 180px;
-    margin-top: 1.5rem;
-    order: -1;
-    /* Image first on mobile */
+    min-height: 150px;
   }
 
   /* ========== EXPERIENCE ========== */
@@ -1271,10 +1248,12 @@ section {
     font-size: 0.6875rem;
   }
 
-  /* Projects */
+  /* Projects - Keep sticky for animation */
   .project-card {
+    height: 55vh;
+    min-height: 350px;
     padding: 1.25rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     border-radius: 1rem;
   }
 
@@ -1288,7 +1267,7 @@ section {
   }
 
   .project-card__visual {
-    min-height: 150px;
+    min-height: 120px;
     border-radius: 0.75rem;
   }
 
