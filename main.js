@@ -504,27 +504,23 @@ const initContactLinks = () => {
     });
 };
 
-
-
 // 9. Dynamic Hero Images & Favicon
 const initHeroImages = () => {
     return new Promise((resolveAll) => {
         // Load all images (jpg, png, svg, webp) from assets/hero directory
-        // { eager: true } imports them immediately
-        // Vite handles asset URLs automatically
+        // NOTE: Ensure these files actually exist in your project structure!
         const imagesGlob = import.meta.glob('/assets/hero/*.{jpg,jpeg,png,webp,svg}', { eager: true });
 
-        // Extract URLs (handling both direct string and module.default formats)
         const imageUrls = Object.values(imagesGlob).map(mod => {
             return typeof mod === 'object' && mod.default ? mod.default : mod;
         });
 
         if (imageUrls.length === 0) {
-            resolveAll();
+            resolveAll([]);
             return;
         }
 
-        // 1. Set Tab Bar Image (Favicon) to the FIRST image
+        // 1. Set Tab Bar Image (Favicon)
         let link = document.querySelector("link[rel~='icon']");
         if (!link) {
             link = document.createElement('link');
@@ -533,38 +529,26 @@ const initHeroImages = () => {
         }
         link.href = imageUrls[0];
 
-        // 2. Populate Image Trail with these images
+        // 2. Populate Image Trail
         const trailContainer = document.getElementById('image-trail');
         if (trailContainer) {
-            // Clear hardcoded Unsplash placeholders
             trailContainer.innerHTML = '';
-
-            // Create a promise for each image loading
+            const images = [];
             const imagePromises = imageUrls.map(url => {
                 const img = document.createElement('img');
                 img.className = 'image-trail__img';
                 img.alt = 'Hero Background';
                 img.setAttribute('role', 'presentation');
                 img.src = url;
+                images.push(img);
 
-                // robust decoding: ensure image is paint-ready before DOM insertion
                 if ('decode' in img) {
                     return img.decode()
-                        .then(() => {
-                            trailContainer.appendChild(img);
-                        })
-                        .catch((err) => {
-                            console.warn(`Image decode failed for ${url}, falling back.`, err);
-                            trailContainer.appendChild(img);
-                        });
+                        .then(() => { trailContainer.appendChild(img); })
+                        .catch(() => { trailContainer.appendChild(img); });
                 } else {
-                    // Fallback for older browsers (unlikely needed but safe)
                     return new Promise((resolve) => {
-                        img.onload = () => {
-                            trailContainer.appendChild(img);
-                            resolve();
-                        };
-                        img.onerror = () => {
+                        img.onload = img.onerror = () => {
                             trailContainer.appendChild(img);
                             resolve();
                         };
@@ -572,116 +556,80 @@ const initHeroImages = () => {
                 }
             });
 
-            // Wait for all images to settle
             Promise.all(imagePromises).then(() => {
-                resolveAll();
+                resolveAll(images);
             });
-
         } else {
-            resolveAll();
+            resolveAll([]);
         }
     });
 };
 
-// Master Init
+// ==========================================
+// MASTER INIT (FIXED)
+// ==========================================
 window.addEventListener('DOMContentLoaded', () => {
-    // Lock scroll during loading animation
-    document.documentElement.classList.add('is-loading');
-    window.scrollTo(0, 0);
-
-    // 1. Initialize standard assets dynamically & return Promise
-    const imagesLoadedPromise = initHeroImages();
-
-    // 2. Signature Preloader Setup
     const preloader = document.querySelector('.preloader');
-    const signaturePath = document.getElementById('sig-path');
 
-    // Create a promise for the signature animation
+    // 1. Define Unlock Function
+    const unlockAndInit = () => {
+        document.documentElement.classList.remove('is-loading');
+        // Initialize everything
+        if (typeof initLenis === 'function') initLenis();
+        if (typeof initHero === 'function') initHero();
+        if (typeof initAbout === 'function') initAbout();
+        if (typeof initSkills === 'function') initSkills();
+        if (typeof initProjects === 'function') initProjects();
+        if (typeof initExperience === 'function') initExperience();
+        if (typeof initSectionTitles === 'function') initSectionTitles();
+        if (typeof initFooter === 'function') initFooter();
+        if (typeof initContactLinks === 'function') initContactLinks();
+        if (typeof initImageTrail === 'function') initImageTrail();
+    };
+
+    // 2. Start Image Loading IMMEDIATELY (Parallel)
+    // Yeh background mein chalega jab tak animation ho rahi hai
+    const imagesLoadingPromise = initHeroImages().catch(err => {
+        console.warn("Image load failed", err);
+        return []; // Fail safely
+    });
+
+    // 3. Start Signature Timer (Parallel)
     const signatureAnimationPromise = new Promise((resolve) => {
-        if (!signaturePath) {
-            resolve(); // Resolve immediately if no signature
-            return;
-        }
+        const path = document.querySelector('.signature-path');
+        if (!path) { resolve(); return; }
 
-        // Setup CSS variables for path length
-        const pathLength = signaturePath.getTotalLength();
-        signaturePath.style.setProperty('--path-length', pathLength);
-        signaturePath.style.strokeDasharray = pathLength;
-        signaturePath.style.strokeDashoffset = pathLength;
-
-        // Listen for animation completion
-        signaturePath.addEventListener('animationend', () => {
-            // Keep it glowing while we might be waiting for images
-            signaturePath.classList.add('drawn');
-            // Resolve the visual part of the loading
+        // Wait for animation end OR 3.5s timeout (whichever comes first)
+        const fallbackTimer = setTimeout(resolve, 3500);
+        path.addEventListener('animationend', () => {
+            clearTimeout(fallbackTimer);
             resolve();
         }, { once: true });
     });
 
-    // 3. Helper to unlock and start the site
-    const unlockAndInit = () => {
-        window.scrollTo(0, 0);
-        document.documentElement.classList.remove('is-loading');
+    // Lock Scroll
+    document.documentElement.classList.add('is-loading');
+    window.scrollTo(0, 0);
 
-        // Initialize Lenis exactly when needed
-        initLenis();
-
-        // Start all site logic
-        initImageTrail();
-        initHero();
-        initAbout();
-        initSkills();
-        initProjects();
-        initExperience();
-        initSectionTitles();
-        initFooter();
-        initContactLinks();
-
-        // Handle orientation change - refresh ScrollTrigger
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                ScrollTrigger.refresh();
-            }, 100);
-        });
-
-        // Handle resize for responsive recalculation
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                ScrollTrigger.refresh();
-            }, 250);
-        });
-    };
-
-    // 4. Wait for BOTH: Images Loaded AND Signature Drawn
-    Promise.all([imagesLoadedPromise, signatureAnimationPromise])
-        .then(() => {
-            // Add a small buffer for the "glow" to be appreciated or to smooth the transition
-            setTimeout(() => {
-                // Determine if we need to start the exit sequence
-                // The signature might be glowing.
-
-                // 1. Fade out the whole preloader container
-                preloader.classList.add('fade-out');
-
-                // 2. Schedule the site unlock to happen during the fade for smoothness
-                // (Start revealing content while veil lifts)
-                setTimeout(() => {
-                    unlockAndInit();
-                }, 400);
-
-                // 3. Remove preloader from DOM
-                setTimeout(() => {
-                    preloader.style.display = 'none';
-                }, 1200);
-
-            }, 600); // 600ms buffer after both are ready
+    // 4. Wait for BOTH to finish
+    Promise.all([signatureAnimationPromise, imagesLoadingPromise])
+        .then(([_, images]) => {
+            // GPU Warmup (Optional optimization)
+            if (images && images.length > 0) {
+                images.forEach(img => {
+                    img.style.opacity = '0.01';
+                    void img.offsetHeight;
+                    img.style.opacity = '';
+                });
+            }
+            return new Promise(r => setTimeout(r, 100)); // Tiny buffer
         })
-        .catch((err) => {
-            console.warn("Loading issue:", err);
-            // Fallback: force open if something fails
-            preloader.classList.add('fade-out');
-            setTimeout(unlockAndInit, 1000);
+        .then(() => {
+            // Exit Sequence
+            if (preloader) preloader.classList.add('fade-out');
+            setTimeout(unlockAndInit, 500); // Unlock while fading
+            setTimeout(() => {
+                if (preloader) preloader.style.display = 'none';
+            }, 1500);
         });
 });
