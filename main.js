@@ -348,6 +348,63 @@ const initFooter = () => {
     });
 };
 
+// 9. Contact Links with Magnetic Effect & GSAP Animations
+const initContactLinks = () => {
+    const contactLinks = document.querySelectorAll('.contact-link');
+    if (contactLinks.length === 0) return;
+
+    // Skip magnetic effect on touch devices
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+    contactLinks.forEach((link) => {
+        const icon = link.querySelector('.contact-link__icon');
+
+        if (!isTouchDevice) {
+            // Magnetic hover effect for icon
+            link.addEventListener('mousemove', (e) => {
+                const rect = icon.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+
+                gsap.to(icon, {
+                    x: x * 0.2,
+                    y: y * 0.2,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+
+            link.addEventListener('mouseleave', () => {
+                gsap.to(icon, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.6,
+                    ease: 'elastic.out(1, 0.4)'
+                });
+            });
+        }
+    });
+
+    // Scroll-triggered staggered reveal
+    ScrollTrigger.create({
+        trigger: '.contact-links',
+        start: 'top 85%',
+        toggleActions: 'play none none reset',
+        onEnter: () => {
+            contactLinks.forEach((link, index) => {
+                setTimeout(() => {
+                    link.classList.add('is-visible');
+                }, index * 100);
+            });
+        },
+        onLeaveBack: () => {
+            contactLinks.forEach((link) => {
+                link.classList.remove('is-visible');
+            });
+        }
+    });
+};
+
 
 
 // 9. Dynamic Hero Images & Favicon
@@ -479,6 +536,7 @@ window.addEventListener('DOMContentLoaded', () => {
         initExperience();
         initSectionTitles();
         initFooter();
+        initContactLinks();
 
         // Handle orientation change - refresh ScrollTrigger
         window.addEventListener('orientationchange', () => {
