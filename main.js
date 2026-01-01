@@ -125,14 +125,15 @@ class ImageTrail {
     }
 }
 
-// Touch Image Burst Effect Class - Mobile/Tablet (Tap-based)
-class TouchImageBurst {
+// Touch Image Effect Class - Mobile/Tablet (Tap-based, 1 image per tap)
+class TouchImageEffect {
     constructor(container) {
         this.container = container;
         this.images = [...container.querySelectorAll('.image-trail__img')];
         this.imgIndex = 0;
         this.zIndex = 1;
-        this.isAnimating = false;
+        this.lastTapTime = 0;
+        this.tapCooldown = 150; // Prevent accidental double-taps
 
         // Bind methods
         this.onTap = this.onTap.bind(this);
@@ -144,14 +145,22 @@ class TouchImageBurst {
         const hero = this.container.closest('.hero');
         if (!hero) return;
 
-        // Listen for touch/click events
+        // Listen for touch and click events
         hero.addEventListener('touchstart', this.onTap, { passive: true });
         hero.addEventListener('click', this.onTap);
     }
 
     onTap(e) {
-        // Prevent double-firing on touch devices
-        if (e.type === 'click' && e.pointerType === 'touch') return;
+        // Cooldown to prevent rapid double-fires
+        const now = Date.now();
+        if (now - this.lastTapTime < this.tapCooldown) return;
+        this.lastTapTime = now;
+
+        // Prevent double-firing (touchstart + click on same tap)
+        if (e.type === 'click' && 'ontouchstart' in window) {
+            // On touch devices, ignore synthetic click events
+            return;
+        }
 
         // Get tap position
         let x, y;
@@ -165,67 +174,46 @@ class TouchImageBurst {
             y = e.clientY - rect.top;
         }
 
-        // Create burst effect - show 3-5 images in a radial pattern
-        this.createBurst(x, y);
+        // Show single image at tap position
+        this.showImageAtPosition(x, y);
     }
 
-    createBurst(centerX, centerY) {
-        const burstCount = gsap.utils.random(3, 5, 1); // 3-5 images per tap
-        const baseDelay = 0;
-
-        for (let i = 0; i < burstCount; i++) {
-            // Stagger each image slightly
-            setTimeout(() => {
-                this.showImageAtPosition(centerX, centerY, i, burstCount);
-            }, i * 80);
-        }
-    }
-
-    showImageAtPosition(centerX, centerY, burstIndex, totalBurst) {
+    showImageAtPosition(x, y) {
         const img = this.images[this.imgIndex];
         if (!img) return;
 
-        // Update z-index
+        // Update z-index for proper stacking
         this.zIndex++;
         img.style.zIndex = this.zIndex;
 
-        // Calculate offset position in a radial pattern
-        const angle = (burstIndex / totalBurst) * Math.PI * 2 + gsap.utils.random(-0.3, 0.3);
-        const radius = gsap.utils.random(40, 120);
-        const offsetX = centerX + Math.cos(angle) * radius;
-        const offsetY = centerY + Math.sin(angle) * radius;
+        // Random rotation for visual interest
+        const rotation = gsap.utils.random(-15, 15);
 
-        // Random rotation
-        const rotation = gsap.utils.random(-25, 25);
-        const scale = gsap.utils.random(0.8, 1.2);
-
-        // Set initial position (from center, scaled down)
+        // Set initial state - centered at tap point, scaled down
         gsap.set(img, {
-            x: centerX,
-            y: centerY,
+            x: x,
+            y: y,
             rotation: 0,
             scale: 0,
             opacity: 0
         });
 
-        // Animate: burst outward, then fade
+        // Animate: pop in elegantly, hold briefly, then fade out
         gsap.timeline()
             .to(img, {
-                x: offsetX,
-                y: offsetY,
+                scale: 1,
                 rotation: rotation,
-                scale: scale,
                 opacity: 1,
-                duration: 0.5,
-                ease: 'power3.out'
+                duration: 0.4,
+                ease: 'back.out(1.7)'
             })
             .to(img, {
                 opacity: 0,
-                scale: scale * 0.5,
-                y: offsetY + 30, // slight drop
-                duration: 0.6,
+                scale: 0.8,
+                y: y + 20, // slight drop as it fades
+                duration: 0.5,
                 ease: 'power2.in'
-            }, '+=0.2');
+            }, '+=0.4'); // Hold for 0.4s before fading
 
         // Cycle to next image
         this.imgIndex = (this.imgIndex + 1) % this.images.length;
@@ -239,8 +227,8 @@ const initImageTrail = () => {
 
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
-    // Always initialize touch/click burst for taps and clicks
-    new TouchImageBurst(container);
+    // Always initialize touch/click effect for taps and clicks
+    new TouchImageEffect(container);
 
     // Also initialize mouse trail on non-touch devices
     if (!isTouchDevice) {
