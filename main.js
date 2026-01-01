@@ -125,8 +125,12 @@ class ImageTrail {
     }
 }
 
-// Initialize Image Trail
+// Initialize Image Trail (skip on touch devices for performance)
 const initImageTrail = () => {
+    // Skip on touch devices - CSS also hides it via pointer:coarse
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouchDevice) return;
+
     const container = document.getElementById('image-trail');
     if (container) {
         new ImageTrail(container);
@@ -210,9 +214,17 @@ const initHero = () => {
     });
 };
 
-// 3. Horizontal Scroll (About)
+// 3. Horizontal Scroll (About) - Disabled on mobile
 const initAbout = () => {
     const track = document.querySelector('.about__track');
+
+    // Skip horizontal scroll on mobile (≤768px) - CSS handles vertical layout
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobile) {
+        // Ensure no residual transforms on mobile
+        gsap.set(track, { xPercent: 0, clearProps: 'all' });
+        return;
+    }
 
     gsap.to(track, {
         xPercent: -66.666, // Move 2/3rds (since 3 panels)
@@ -475,6 +487,22 @@ window.addEventListener('DOMContentLoaded', () => {
         initExperience();
         initSectionTitles();
         initFooter();
+
+        // Handle orientation change - refresh ScrollTrigger
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 100);
+        });
+
+        // Handle resize for responsive recalculation
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 250);
+        });
     };
 
     // 4. Wait for BOTH: Images Loaded AND Signature Drawn

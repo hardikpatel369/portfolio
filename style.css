@@ -30,8 +30,9 @@
   /* Animation */
   --easing-smooth: cubic-bezier(0.19, 1, 0.22, 1);
 
-  /* Layout Spacing */
-  --section-spacing: 12vh;
+  /* Layout Spacing - Responsive */
+  --section-spacing: clamp(6vh, 10vh, 12vh);
+  --container-padding: clamp(1rem, 4vw, 2rem);
 }
 
 *,
@@ -241,7 +242,7 @@ html.is-loading body {
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--container-padding);
 }
 
 section {
@@ -997,5 +998,453 @@ section {
   /* Disable noise overlay on mobile for performance */
   .noise-overlay {
     display: none;
+  }
+}
+
+/* ===================================
+   COMPREHENSIVE RESPONSIVE STYLES
+   =================================== */
+
+/* Tablet - 769px to 1024px */
+@media (max-width: 1024px) {
+
+  /* About Section - Reduce padding */
+  .about__panel {
+    padding: 3rem 2rem;
+  }
+
+  .about__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  }
+
+  /* Projects - Adjust spacing */
+  .project-card {
+    padding: 2.5rem;
+    gap: 2rem;
+  }
+
+  /* Skills - Tighter layout */
+  .skills__cloud {
+    gap: 1rem;
+    max-width: 800px;
+  }
+
+  .skill-tag {
+    padding: 0.875rem 1.5rem;
+  }
+
+  /* Experience - Tighter spacing */
+  .exp-card {
+    padding: 1.75rem 2rem;
+  }
+
+  /* Footer - Smaller button */
+  .magnetic-btn {
+    padding: 1.5rem 3rem;
+  }
+}
+
+/* Mobile Large & Phablet - up to 768px */
+@media (max-width: 768px) {
+
+  /* ========== ABOUT SECTION: Vertical Layout ========== */
+  .about {
+    height: auto;
+    min-height: auto;
+  }
+
+  .about__track {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+  }
+
+  .about__panel {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    padding: 3rem 1.5rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .about__panel:last-child {
+    border-bottom: none;
+  }
+
+  .about__content {
+    max-width: 100%;
+  }
+
+  .about__heading {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .about__stat {
+    display: none;
+  }
+
+  /* ========== HERO ========== */
+  .hero__title {
+    font-size: clamp(2.5rem, 15vw, 5rem);
+  }
+
+  .hero__subtitle {
+    margin-top: 2rem;
+  }
+
+  /* ========== SKILLS ========== */
+  .skills {
+    min-height: auto;
+    padding: var(--section-spacing) 0;
+  }
+
+  .skills__cloud {
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  .skill-tag {
+    padding: 0.625rem 1.25rem;
+    font-size: var(--text-xs);
+  }
+
+  /* ========== PROJECTS ========== */
+  .project-card {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: auto;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 1.5rem;
+  }
+
+  .project-card__content {
+    padding: 0;
+  }
+
+  .project-card__title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .project-card__desc {
+    font-size: var(--text-base);
+    margin-bottom: 1.5rem;
+  }
+
+  .project-card__visual {
+    min-height: 180px;
+    margin-top: 1.5rem;
+    order: -1;
+    /* Image first on mobile */
+  }
+
+  /* ========== EXPERIENCE ========== */
+  .experience__grid {
+    max-width: 100%;
+  }
+
+  .experience__line {
+    left: 4px;
+  }
+
+  .experience__cards {
+    padding-left: 2rem;
+  }
+
+  .exp-card {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .exp-card__dot {
+    left: calc(-2rem - 3px);
+    width: 8px;
+    height: 8px;
+  }
+
+  .exp-card__header {
+    padding-right: 1.5rem;
+  }
+
+  .exp-card__role {
+    font-size: 1.125rem;
+  }
+
+  .exp-card__number {
+    font-size: 3rem;
+    top: -0.25rem;
+    right: 0;
+  }
+
+  .exp-card__item {
+    font-size: var(--text-sm);
+  }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    min-height: auto;
+    padding: var(--section-spacing) 0;
+  }
+
+  .footer__title {
+    font-size: clamp(2rem, 10vw, 4rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .footer__text {
+    font-size: var(--text-base);
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .footer__cta-wrapper {
+    margin-bottom: 3rem;
+  }
+
+  .magnetic-btn {
+    padding: 1.25rem 2.5rem;
+    font-size: var(--text-xs);
+  }
+
+  /* ========== PRELOADER ========== */
+  .preloader__signature {
+    width: 90%;
+    max-width: 280px;
+  }
+
+  /* ========== SECTION TITLES ========== */
+  .section-title {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin-bottom: 2.5rem;
+  }
+}
+
+/* Small Mobile - up to 480px */
+@media (max-width: 480px) {
+
+  /* Ultra-compact padding */
+  :root {
+    --container-padding: 1rem;
+  }
+
+  /* Hero - Even smaller */
+  .hero__title {
+    font-size: clamp(2rem, 18vw, 3.5rem);
+    letter-spacing: -0.03em;
+  }
+
+  .hero__subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    margin-top: 1.5rem;
+  }
+
+  /* About - Compact */
+  .about__panel {
+    padding: 2.5rem 1rem;
+  }
+
+  .about__label {
+    font-size: var(--text-xs);
+    margin-bottom: 1rem;
+  }
+
+  .about__heading {
+    font-size: 1.375rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .about__text {
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  /* Skills - Very compact */
+  .skills__cloud {
+    gap: 0.5rem;
+  }
+
+  .skill-tag {
+    padding: 0.5rem 1rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Projects */
+  .project-card {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 1rem;
+  }
+
+  .project-card__title {
+    font-size: 1.25rem;
+  }
+
+  .project-card__tags span {
+    font-size: 0.625rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .project-card__visual {
+    min-height: 150px;
+    border-radius: 0.75rem;
+  }
+
+  /* Experience */
+  .experience__cards {
+    padding-left: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .exp-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .exp-card__dot {
+    left: calc(-1.5rem - 3px);
+    top: 2rem;
+  }
+
+  .exp-card__period {
+    font-size: 0.625rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .exp-card__role {
+    font-size: 1rem;
+  }
+
+  .exp-card__company,
+  .exp-card__location {
+    font-size: var(--text-xs);
+  }
+
+  .exp-card__number {
+    display: none;
+  }
+
+  .exp-card__item {
+    font-size: 0.8125rem;
+    gap: 0.5rem;
+  }
+
+  .exp-card__bullet {
+    margin-top: 0.5rem;
+  }
+
+  /* Footer */
+  .footer__title {
+    font-size: clamp(1.75rem, 12vw, 2.5rem);
+  }
+
+  .footer__text {
+    font-size: var(--text-sm);
+  }
+
+  .magnetic-btn {
+    padding: 1rem 2rem;
+    width: calc(100% - 2rem);
+    text-align: center;
+  }
+
+  .footer__credits {
+    font-size: 0.625rem;
+  }
+
+  /* Section Titles */
+  .section-title {
+    font-size: clamp(1.5rem, 10vw, 2.5rem);
+    margin-bottom: 2rem;
+  }
+
+  /* Preloader */
+  .preloader__signature {
+    max-width: 220px;
+  }
+}
+
+/* ===================================
+   TOUCH DEVICE OPTIMIZATIONS
+   =================================== */
+@media (pointer: coarse) {
+
+  /* Disable image trail on touch devices for performance */
+  .image-trail {
+    display: none !important;
+  }
+
+  /* Remove hover-dependent micro-interactions */
+  .skill-tag:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Make tap targets larger */
+  .magnetic-btn {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Disable 3D transforms on touch for better performance */
+  .exp-card:hover {
+    transform: none;
+  }
+
+  .skill-tag:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* ===================================
+   LANDSCAPE MOBILE
+   =================================== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    height: auto;
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  .hero__title {
+    font-size: clamp(2rem, 10vh, 4rem);
+  }
+
+  .footer {
+    min-height: auto;
+  }
+}
+
+/* ===================================
+   HIGH DPI / RETINA DISPLAYS
+   =================================== */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  .signature-path {
+    stroke-width: 5;
+  }
+}
+
+/* ===================================
+   REDUCED MOTION PREFERENCE
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .preloader {
+    display: none;
+  }
+
+  html.is-loading,
+  html.is-loading body {
+    overflow: visible !important;
   }
 }
