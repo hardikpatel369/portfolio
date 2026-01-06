@@ -504,6 +504,14 @@ const initContactLinks = () => {
     });
 };
 
+// 10. Dynamic Year Update
+const initYearUpdate = () => {
+    const yearSpan = document.getElementById('year');
+    if (yearSpan) {
+        yearSpan.textContent = new Date().getFullYear();
+    }
+};
+
 // 9. Dynamic Hero Images & Favicon
 const initHeroImages = () => {
     return new Promise((resolveAll) => {
@@ -569,6 +577,9 @@ const initHeroImages = () => {
 // MASTER INIT (FIXED)
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
+    // 4. Run Year Update Immediately (No delay)
+    if (typeof initYearUpdate === 'function') initYearUpdate();
+
     const preloader = document.querySelector('.preloader');
 
     // 1. Define Unlock Function
