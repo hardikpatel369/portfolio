@@ -543,6 +543,10 @@ section {
   background: linear-gradient(45deg, #6366F1, #312E81);
 }
 
+.project-card__img-placeholder--4 {
+  background: linear-gradient(45deg, #F59E0B, #7C2D12);
+}
+
 /* ===================================
    EXPERIENCE SECTION - Card Design
    =================================== */
