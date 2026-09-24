@@ -1,9 +1,11 @@
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import ScrambleTextPlugin from 'gsap/ScrambleTextPlugin';
 import Lenis from 'lenis';
 import SplitType from 'split-type';
+import { CONFIG } from './config.js';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin);
 
 // Image Trail Effect Class - Desktop (Mouse-based)
 class ImageTrail {
@@ -415,39 +417,7 @@ const initSectionTitles = () => {
 
 
 
-// 8. Footer Magnetic Button
-const initFooter = () => {
-    const btn = document.querySelector('.magnetic-btn');
-    if (!btn) return;  // Error handling: return early if element not found
-
-    const text = btn.querySelector('.magnetic-btn__text');
-
-    btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-
-        gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3 });
-        if (text) gsap.to(text, { x: x * 0.1, y: y * 0.1, duration: 0.3 });
-    });
-
-    btn.addEventListener('mouseleave', () => {
-        gsap.to([btn, text].filter(Boolean), { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.3)' });
-    });
-
-    // Keyboard accessibility: activate on Enter/Space
-    btn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            // Trigger the link's default action
-            if (btn.href) {
-                window.location.href = btn.href;
-            }
-        }
-    });
-};
-
-// 9. Contact Links with Magnetic Effect & GSAP Animations
+// 8. Contact Links - magnetic hover (reveal is driven by initSpotlight)
 const initContactLinks = () => {
     const contactLinks = document.querySelectorAll('.contact-link');
     if (contactLinks.length === 0) return;
@@ -483,28 +453,180 @@ const initContactLinks = () => {
             });
         }
     });
-
-    // Scroll-triggered staggered reveal
-    ScrollTrigger.create({
-        trigger: '.contact-links',
-        start: 'top 85%',
-        toggleActions: 'play none none reset',
-        onEnter: () => {
-            contactLinks.forEach((link, index) => {
-                setTimeout(() => {
-                    link.classList.add('is-visible');
-                }, index * 100);
-            });
-        },
-        onLeaveBack: () => {
-            contactLinks.forEach((link) => {
-                link.classList.remove('is-visible');
-            });
-        }
-    });
 };
 
-// 10. Dynamic Year Update
+// 10. Spotlight CTA - stacked "BUILD"; the front "I" drops out, turns sideways and becomes the contact link
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const WORD_VIEWBOX_WIDTH = 6661;
+// Fallback if getBBox is unavailable (e.g. SVG not rendered yet)
+const LETTER_I_BOX = { x: 3205.66, y: 0, width: 337.5, height: 1750 };
+
+const initSpotlight = () => {
+    const section = document.querySelector('.spotlight');
+    const front = section?.querySelector('.spotlight__header');
+    const letterI = front?.querySelector('.spotlight__letter-i');
+    if (!letterI) return;
+
+    const opts = CONFIG.spotlight;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const contactLinksRow = section.querySelector('.contact-links');
+    const contactLinks = contactLinksRow ? [...contactLinksRow.querySelectorAll('.contact-link')] : [];
+
+    // Echo layers: clones sit behind the original, which stays the front (interactive) layer
+    for (let i = 1; i < opts.layers; i++) {
+        const clone = front.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        section.insertBefore(clone, front);
+    }
+    const headers = [...section.querySelectorAll('.spotlight__header')];
+    const last = headers.length - 1;
+    headers.forEach((header, i) => {
+        // Back layers fade toward the surface colour, front layer is full text colour
+        const t = last ? Math.pow(i / last, 1.5) : 1;
+        header.style.setProperty('--layer-fill', gsap.utils.interpolate('#262626', '#EDEDED', t));
+    });
+
+    // Wrap the front "I" in <a><g>: GSAP transforms the group, the anchor makes it a real link
+    const link = document.createElementNS(SVG_NS, 'a');
+    link.setAttribute('href', opts.href);
+    link.setAttribute('class', 'spotlight__link');
+    link.setAttribute('aria-label', opts.label);
+    const group = document.createElementNS(SVG_NS, 'g');
+    letterI.parentNode.insertBefore(link, letterI);
+    link.appendChild(group);
+    group.appendChild(letterI);
+
+    let box = LETTER_I_BOX;
+    try {
+        const b = letterI.getBBox();
+        if (b.width && b.height) box = b;
+    } catch { /* keep fallback */ }
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+
+    // Label is drawn upright inside the vertical "I" (rotated -90) so it reads normally once the group turns +90
+    const label = document.createElementNS(SVG_NS, 'text');
+    label.setAttribute('class', 'spotlight__label');
+    label.setAttribute('x', cx);
+    label.setAttribute('y', cy);
+    label.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
+    label.setAttribute('aria-hidden', 'true');
+    group.appendChild(label);
+    gsap.set(group, { transformOrigin: '50% 50%' });
+
+    const labelText = opts.label.toUpperCase();
+    const labelTween = reduceMotion ? null : gsap.to(label, {
+        duration: 0.75,
+        scrambleText: { text: labelText, chars: 'upperCase', revealDelay: 0.1, speed: 0.5 },
+        paused: true,
+    });
+
+    // Geometry is derived from the live layout, so the "I" always lands in the empty space
+    // under the stack and at a readable size, whatever the viewport.
+    let geo = { shiftStep: 0, slide: 0, letterScale: 1 };
+    const measure = () => {
+        const style = getComputedStyle(front);
+        const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+        const padTop = parseFloat(style.paddingTop);
+        const k = (front.clientWidth - padX) / WORD_VIEWBOX_WIDTH; // px per SVG unit
+        if (!k) return;
+
+        const vw = window.innerWidth;
+        const headerTop = front.offsetTop;
+        const headerH = front.offsetHeight;
+        const shiftStep = vw < 1000 ? 20 : 6;
+        const frontScale = 1 - last * opts.scaleStep;
+        const frontShift = last * shiftStep;
+        const stackBottom = headerTop + headerH + frontShift;
+        // Usable space runs from the stack down to the copyright line (or the section bottom)
+        const credits = section.querySelector('.spotlight__credits');
+        const bottomLimit = credits ? credits.offsetTop - 16 : section.clientHeight;
+        const freeSpace = Math.max(bottomLimit - stackBottom, 0);
+        // Fixed space around the bar: gap above it, the icon row and gaps below it
+        const reservedH = (contactLinksRow
+            ? contactLinksRow.offsetHeight + opts.linksGap + opts.linksBottomGap
+            : 0) + opts.barTopGap;
+
+        // Finished bar length on screen; keep its thickness inside what's left after the icons
+        const { vw: vwFrac, min, max } = opts.barWidth;
+        let barLen = gsap.utils.clamp(min, max, vw * vwFrac);
+        barLen = Math.min(barLen, (Math.max(freeSpace - reservedH, 0) * 0.9 * box.height) / box.width, vw - 32);
+        barLen = Math.max(barLen, 120);
+        const barThickness = (barLen * box.width) / box.height;
+
+        const blockTop = stackBottom + opts.barTopGap + Math.max((freeSpace - barThickness - reservedH) / 2, 0);
+        const target = blockTop + barThickness / 2;
+        if (contactLinksRow) contactLinksRow.style.top = `${target + barThickness / 2 + opts.linksGap}px`;
+
+        // Header scales from its bottom edge, so solve for the SVG-unit slide that puts the centre on target
+        const slide = (headerH - padTop - (stackBottom - target) / frontScale) / k - cy;
+        geo = { shiftStep, slide, letterScale: barLen / (box.height * k * frontScale) };
+    };
+
+    let isRevealed = false;
+    const setRevealed = (revealed) => {
+        if (revealed === isRevealed) return;
+        isRevealed = revealed;
+        section.classList.toggle('is-revealed', revealed);
+        // Stagger comes from the nth-child transition delays in CSS
+        contactLinks.forEach((el) => el.classList.toggle('is-visible', revealed));
+        if (labelTween) {
+            revealed ? labelTween.play() : labelTween.reverse();
+        } else {
+            label.textContent = revealed ? labelText : '';
+        }
+    };
+
+    const render = (progress) => {
+        const cascade = Math.min(progress / 0.5, 1);
+        headers.forEach((header, i) => {
+            gsap.set(header, {
+                scale: 1 - i * opts.scaleStep * cascade,
+                y: i * geo.shiftStep * cascade,
+            });
+        });
+
+        const drop = gsap.utils.clamp(0, 1, (progress - 0.5) / 0.5);
+        gsap.set(group, {
+            rotation: 90 * drop,
+            y: geo.slide * drop,
+            scale: gsap.utils.interpolate(1, geo.letterScale, drop),
+        });
+
+        setRevealed(progress >= opts.revealAt);
+    };
+
+    measure();
+
+    if (reduceMotion) {
+        // No scroll choreography: show the finished composition and keep it laid out on resize
+        render(1);
+        ScrollTrigger.addEventListener('refresh', () => { measure(); render(1); });
+        return;
+    }
+
+    render(0);
+    const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${window.innerHeight * opts.scrollLength}`,
+        pin: true,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onRefresh: (self) => { measure(); render(self.progress); },
+        onUpdate: (self) => render(self.progress),
+    });
+
+    // Keyboard users tabbing onto the bar or the (still hidden) icons get taken to the revealed state
+    const revealOnFocus = () => {
+        if (isRevealed) return;
+        if (lenisInstance) lenisInstance.scrollTo(trigger.end);
+        else window.scrollTo(0, trigger.end);
+    };
+    [link, ...contactLinks].forEach((el) => el.addEventListener('focus', revealOnFocus));
+};
+
+// 11. Dynamic Year Update
 const initYearUpdate = () => {
     const yearSpan = document.getElementById('year');
     if (yearSpan) {
@@ -592,8 +714,8 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof initSkills === 'function') initSkills();
         if (typeof initProjects === 'function') initProjects();
         if (typeof initExperience === 'function') initExperience();
+        if (typeof initSpotlight === 'function') initSpotlight();
         if (typeof initSectionTitles === 'function') initSectionTitles();
-        if (typeof initFooter === 'function') initFooter();
         if (typeof initContactLinks === 'function') initContactLinks();
         if (typeof initImageTrail === 'function') initImageTrail();
     };

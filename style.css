@@ -64,8 +64,6 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-
-
 /* Typography */
 h1,
 h2,
@@ -189,8 +187,6 @@ html.is-loading body {
     filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 50px rgba(255, 255, 255, 0.15));
   }
 }
-
-
 
 /* Preloader exit animation - fade background only */
 .preloader.fade-out {
@@ -335,7 +331,6 @@ section {
 }
 
 /* style.css */
-
 
 /* About (Horizontal) */
 .about {
@@ -577,8 +572,6 @@ section {
   transition: opacity 0.8s var(--easing-smooth), transform 0.8s var(--easing-smooth);
 }
 
-
-
 /* Experience Grid Container */
 .experience__grid {
   position: relative;
@@ -781,8 +774,6 @@ section {
   opacity: 0.5;
 }
 
-
-
 /* ===================================
    EXPERIENCE ANIMATIONS (Active State)
    =================================== */
@@ -793,8 +784,6 @@ section {
     opacity 0.8s var(--easing-smooth) 0.1s,
     transform 0.8s var(--easing-smooth) 0.1s;
 }
-
-
 
 .experience__line.is-visible {
   transform: scaleY(1);
@@ -866,113 +855,127 @@ section {
   }
 }
 
-/* Footer - Full Viewport Height like Hero */
-.footer {
-  height: 100vh;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0;
+/* ===================================
+   SPOTLIGHT CTA - stacked "BUILD", the "I" becomes the contact link
+   Layers, link and label are built in main.js (initSpotlight)
+   =================================== */
+.spotlight {
   position: relative;
+  height: 100vh;
+  height: 100svh;
+  padding: 0;
   overflow: hidden;
   background-color: var(--bg-dark);
 }
 
-/* Subtle decorative gradient for footer */
-.footer::before {
-  content: '';
+.spotlight__header {
   position: absolute;
-  top: 0;
+  top: clamp(1.5rem, 8vh, 6rem);
   left: 0;
+  right: 0;
+  /* Cap the word on wide screens so the bar and icons below get room;
+     a narrower box (not padding) keeps the echo layers peeking out at the sides */
+  max-width: calc(1200px + 2 * var(--container-padding));
+  margin-inline: auto;
+  padding: 2rem var(--container-padding);
+  /* Solid backing so each layer hides the one behind it */
+  background-color: var(--bg-dark);
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+.spotlight__word {
+  display: block;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.02) 0%, transparent 60%);
+  height: auto;
+  overflow: visible;
+}
+
+.spotlight__word path {
+  fill: var(--layer-fill, var(--text-primary));
+}
+
+.spotlight__label {
+  fill: var(--bg-dark);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 125px;
+  letter-spacing: 6px;
   pointer-events: none;
 }
 
-.footer__container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  height: 100%;
-  padding: clamp(3rem, 8vh, 6rem) var(--container-padding);
-  position: relative;
+/* Link only takes clicks once the label is showing; keyboard focus always works */
+.spotlight__link {
+  pointer-events: none;
+  outline: none;
+}
+
+.spotlight.is-revealed .spotlight__link {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.spotlight__link g {
+  transition: filter 0.4s var(--easing-smooth);
+}
+
+.spotlight__link .spotlight__letter-i {
+  transition: fill 0.4s var(--easing-smooth);
+}
+
+.spotlight.is-revealed .spotlight__link:hover g,
+.spotlight__link:focus-visible g {
+  filter: drop-shadow(0 0 60px rgba(255, 255, 255, 0.25));
+}
+
+.spotlight.is-revealed .spotlight__link:hover .spotlight__letter-i {
+  fill: #fff;
+}
+
+.spotlight__link:focus-visible .spotlight__letter-i {
+  stroke: var(--text-secondary);
+  stroke-width: 24;
+}
+
+/* Icon row sits under the bar; initSpotlight sets its `top` and toggles .is-visible on reveal */
+.spotlight .contact-links {
+  position: absolute;
+  top: 70%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
   z-index: 1;
 }
 
-.footer__title {
-  font-size: clamp(3rem, 10vw, 9rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin-bottom: clamp(1.5rem, 3vh, 3rem);
-  background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.footer__text {
-  font-size: var(--text-lg);
-  color: var(--text-secondary);
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  max-width: 550px;
-  line-height: 1.7;
-  margin-bottom: clamp(2rem, 5vh, 5rem);
-}
-
-.footer__cta-wrapper {
-  margin-bottom: clamp(3rem, 6vh, 6rem);
-  /* Increased spacing for desktop */
-}
-
-.magnetic-btn {
-  display: inline-block;
-  padding: 1.75rem 4rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 100px;
-  text-decoration: none;
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  position: relative;
-  overflow: hidden;
-  transition: color 0.4s var(--easing-smooth), border-color 0.4s var(--easing-smooth);
-}
-
-.magnetic-btn:hover {
-  color: var(--bg-dark);
-  border-color: var(--text-primary);
-}
-
-.magnetic-btn__bg {
+.spotlight__credits {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: var(--text-primary);
-  z-index: -1;
-  transition: left 0.4s var(--easing-smooth);
-}
-
-.magnetic-btn:hover .magnetic-btn__bg {
+  bottom: 1.5rem;
   left: 0;
-}
-
-.footer__credits {
+  right: 0;
+  text-align: center;
   opacity: 0.4;
   font-family: var(--font-body);
   font-size: var(--text-xs);
   letter-spacing: 0.15em;
   text-transform: uppercase;
+}
+
+@media (max-width: 480px) {
+  .spotlight__credits {
+    font-size: 0.625rem;
+    bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .spotlight__header {
+    top: 22vh;
+    top: 22svh;
+    padding: 1.5rem var(--container-padding);
+  }
 }
 
 /* ===================================
@@ -1118,12 +1121,6 @@ section {
   outline-offset: 2px;
 }
 
-/* Focus Styles for Accessibility */
-.magnetic-btn:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 4px;
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .project-card {
@@ -1193,10 +1190,6 @@ section {
     padding: 1.75rem 2rem;
   }
 
-  /* Footer - Smaller button */
-  .magnetic-btn {
-    padding: 1.5rem 3rem;
-  }
 }
 
 /* Mobile Large & Phablet - up to 768px */
@@ -1312,38 +1305,6 @@ section {
 
   .exp-card__item {
     font-size: var(--text-sm);
-  }
-
-  /* ========== FOOTER ========== */
-  .footer {
-    height: 100vh;
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  .footer__container {
-    padding: clamp(2rem, 6vh, 4rem) var(--container-padding);
-  }
-
-  .footer__title {
-    font-size: clamp(2.25rem, 12vw, 5rem);
-    margin-bottom: clamp(1rem, 2vh, 2rem);
-  }
-
-  .footer__text {
-    font-size: var(--text-base);
-    margin-bottom: clamp(1.5rem, 4vh, 3rem);
-    padding: 0 1rem;
-    max-width: 400px;
-  }
-
-  .footer__cta-wrapper {
-    margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
-  }
-
-  .magnetic-btn {
-    padding: 1.25rem 2.5rem;
-    font-size: var(--text-xs);
   }
 
   /* ========== CONTACT LINKS ========== */
@@ -1496,45 +1457,6 @@ section {
     margin-top: 0.5rem;
   }
 
-  /* Footer */
-  .footer {
-    height: 100vh;
-    min-height: 100vh;
-  }
-
-  .footer__container {
-    padding: clamp(1.5rem, 5vh, 3rem) var(--container-padding);
-  }
-
-  .footer__title {
-    font-size: clamp(1.75rem, 14vw, 3rem);
-    margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
-  }
-
-  .footer__text {
-    font-size: var(--text-sm);
-    margin-bottom: clamp(1rem, 3vh, 2rem);
-    max-width: 320px;
-  }
-
-  .footer__cta-wrapper {
-    margin-bottom: clamp(2rem, 4vh, 3rem);
-    /* Increased spacing for small mobile */
-  }
-
-  .magnetic-btn {
-    padding: 0.875rem 1.5rem;
-    width: auto;
-    max-width: none;
-    text-align: center;
-    white-space: nowrap;
-    /* Keep button text on single line */
-  }
-
-  .footer__credits {
-    font-size: 0.625rem;
-  }
-
   /* Contact Links - Small Mobile */
   .contact-links {
     gap: 0.5rem;
@@ -1601,10 +1523,6 @@ section {
   }
 
   /* Make tap targets larger */
-  .magnetic-btn {
-    min-height: 48px;
-    min-width: 48px;
-  }
 
   /* Disable 3D transforms on touch for better performance */
   .exp-card:hover {
@@ -1630,33 +1548,11 @@ section {
     font-size: clamp(2rem, 10vh, 4rem);
   }
 
-  .footer {
-    height: auto;
-    min-height: 100vh;
-  }
-
-  .footer__container {
-    padding: 2rem var(--container-padding);
-  }
-
-  .footer__title {
-    font-size: clamp(1.5rem, 8vh, 3rem);
-    margin-bottom: 1rem;
-  }
-
-  .footer__text {
-    font-size: var(--text-sm);
-    margin-bottom: 1.5rem;
-  }
-
   .contact-links {
     margin-bottom: 1.5rem;
     gap: 1rem;
   }
 
-  .footer__cta-wrapper {
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ===================================

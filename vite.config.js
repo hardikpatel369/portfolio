@@ -14,7 +14,7 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     // Separate vendor chunks for better caching
-                    vendor: ['gsap', 'gsap/ScrollTrigger'],
+                    vendor: ['gsap', 'gsap/ScrollTrigger', 'gsap/ScrambleTextPlugin'],
                     smoothScroll: ['lenis'],
                 },
             },

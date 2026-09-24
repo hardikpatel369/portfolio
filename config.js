@@ -47,6 +47,32 @@ export const CONFIG = {
     },
 
     /**
+     * Spotlight CTA ("BUILD" stack whose "I" becomes the contact link)
+     */
+    spotlight: {
+        /** Text revealed inside the dropped "I" */
+        label: 'Contact Me',
+        /** Where the "Contact Me" bar goes (pre-filled email, formerly "Initiate Contact") */
+        href: "mailto:patelhardik94271@gmail.com?subject=Let%27s%20Connect%20-%20Portfolio%20Inquiry&body=Hi%20Hardik%2C%0A%0AI%20visited%20your%20portfolio%20and%20I%27m%20impressed%20with%20your%20work.%20I%27d%20love%20to%20discuss%20a%20potential%20collaboration.%0A%0ABest%20regards%2C%0A",
+        /** Gap between the bar and the contact icons below it (px) */
+        linksGap: 32,
+        /** Space kept free under the contact icons, above the copyright line (px) */
+        linksBottomGap: 48,
+        /** Total header copies, including the front one */
+        layers: 6,
+        /** Each layer further forward ends this much smaller */
+        scaleStep: 0.075,
+        /** Pinned scroll length, as a fraction of viewport height */
+        scrollLength: 1.5,
+        /** Scroll progress where the label scrambles in */
+        revealAt: 0.75,
+        /** Width of the finished "I" bar on screen: vw fraction, clamped (px) */
+        barWidth: { vw: 0.7, min: 240, max: 340 },
+        /** Minimum space between the "BUILD" word and the bar (px) */
+        barTopGap: 48,
+    },
+
+    /**
      * Experience Timeline
      */
     experience: {
