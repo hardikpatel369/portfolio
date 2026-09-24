@@ -1303,10 +1303,16 @@ html.menu-open body {
 /* Text sits in a clipping mask and slides up into view */
 .menu__mask {
   display: block;
-  overflow: hidden;
+  /* Clip only the bottom edge (text rises from below). overflow: hidden also clipped
+     sideways and let the box shrink, cutting the last letter of long words on iOS */
+  clip-path: inset(-50% -100vw 0 -100vw);
   /* Room for descenders inside the mask */
   padding-bottom: 0.08em;
   margin-bottom: -0.08em;
+}
+
+.menu__link > .menu__mask {
+  flex-shrink: 0;
 }
 
 .menu__reveal {
@@ -1422,7 +1428,7 @@ html.menu-open body {
   }
 
   .menu__link {
-    font-size: clamp(2.25rem, 11vw, 4rem);
+    font-size: clamp(2rem, 10vw, 4rem);
   }
 }
 
