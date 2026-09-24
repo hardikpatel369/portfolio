@@ -64,6 +64,10 @@ export const CONFIG = {
         scaleStep: 0.075,
         /** Pinned scroll length, as a fraction of viewport height */
         scrollLength: 1.5,
+        /** Touch/phone (no pin): finish this many px before the page bottom (address-bar slack) */
+        touchEndOffset: 120,
+        /** Touch/phone: seconds the animation takes to catch up to the finger (smooths flings) */
+        touchScrub: 0.5,
         /** Scroll progress where the label scrambles in */
         revealAt: 0.75,
         /** Width of the finished "I" bar on screen: vw fraction, clamped (px) */

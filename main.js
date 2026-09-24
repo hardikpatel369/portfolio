@@ -577,49 +577,94 @@ const initSpotlight = () => {
         }
     };
 
-    const render = (progress) => {
+    // quickSetters skip creating a tween per property per frame - render runs on every scroll tick
+    // (quickSetter doesn't expand the `scale` alias, so set scaleX/scaleY together)
+    const scaleSetter = (el) => {
+        const setX = gsap.quickSetter(el, 'scaleX');
+        const setY = gsap.quickSetter(el, 'scaleY');
+        return (v) => { setX(v); setY(v); };
+    };
+    const headerSetters = headers.map((header) => ({
+        scale: scaleSetter(header),
+        y: gsap.quickSetter(header, 'y', 'px'),
+    }));
+    const setGroupRotation = gsap.quickSetter(group, 'rotation');
+    const setGroupY = gsap.quickSetter(group, 'y');
+    const setGroupScale = scaleSetter(group);
+    let lastCascade = -1;
+    let lastDrop = -1;
+
+    const render = (progress, force = false) => {
         const cascade = Math.min(progress / 0.5, 1);
-        headers.forEach((header, i) => {
-            gsap.set(header, {
-                scale: 1 - i * opts.scaleStep * cascade,
-                y: i * geo.shiftStep * cascade,
+        if (force || cascade !== lastCascade) {
+            lastCascade = cascade;
+            headerSetters.forEach((set, i) => {
+                set.scale(1 - i * opts.scaleStep * cascade);
+                set.y(i * geo.shiftStep * cascade);
             });
-        });
+        }
 
         const drop = gsap.utils.clamp(0, 1, (progress - 0.5) / 0.5);
-        gsap.set(group, {
-            rotation: 90 * drop,
-            y: geo.slide * drop,
-            scale: gsap.utils.interpolate(1, geo.letterScale, drop),
-        });
+        if (force || drop !== lastDrop) {
+            lastDrop = drop;
+            setGroupRotation(90 * drop);
+            setGroupY(geo.slide * drop);
+            setGroupScale(gsap.utils.interpolate(1, geo.letterScale, drop));
+        }
 
         setRevealed(progress >= opts.revealAt);
     };
 
-    measure();
+    let trigger = null;
+    const mm = gsap.matchMedia();
+    mm.add({
+        // matchMedia only runs the callback when some condition matches, so keep one that always does
+        any: 'all',
+        // Pinning only where scrolling runs on the main thread with a fine pointer (desktop).
+        // On touch/phones a pinned section jitters: native momentum scroll runs ahead of JS,
+        // and the collapsing address bar moves the pin's end point.
+        pinned: '(pointer: fine) and (min-width: 769px)',
+        reduce: '(prefers-reduced-motion: reduce)',
+    }, (ctx) => {
+        const { pinned, reduce } = ctx.conditions;
+        measure();
 
-    if (reduceMotion) {
-        // No scroll choreography: show the finished composition and keep it laid out on resize
-        render(1);
-        ScrollTrigger.addEventListener('refresh', () => { measure(); render(1); });
-        return;
-    }
+        if (reduce) {
+            // No scroll choreography: show the finished composition, keep it laid out on refresh
+            render(1, true);
+            const relayout = () => { measure(); render(1, true); };
+            ScrollTrigger.addEventListener('refresh', relayout);
+            trigger = null;
+            return () => ScrollTrigger.removeEventListener('refresh', relayout);
+        }
 
-    render(0);
-    const trigger = ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: () => `+=${window.innerHeight * opts.scrollLength}`,
-        pin: true,
-        scrub: true,
-        invalidateOnRefresh: true,
-        onRefresh: (self) => { measure(); render(self.progress); },
-        onUpdate: (self) => render(self.progress),
+        render(0, true);
+        trigger = ScrollTrigger.create({
+            trigger: section,
+            ...(pinned
+                ? {
+                    start: 'top top',
+                    end: () => `+=${window.innerHeight * opts.scrollLength}`,
+                    pin: true,
+                    anticipatePin: 1,
+                    scrub: true,
+                }
+                : {
+                    // Plays while the section scrolls into view, no pin. Finishes a little before
+                    // the page bottom so a hidden/shown address bar can't leave it half done.
+                    start: 'top 75%', // word (22svh into the section) is on screen by now
+                    end: `bottom bottom+=${opts.touchEndOffset}`,
+                    scrub: opts.touchScrub,
+                }),
+            invalidateOnRefresh: true,
+            onRefresh: (self) => { measure(); render(self.progress, true); },
+            onUpdate: (self) => render(self.progress),
+        });
     });
 
     // Keyboard users tabbing onto the bar or the (still hidden) icons get taken to the revealed state
     const revealOnFocus = () => {
-        if (isRevealed) return;
+        if (isRevealed || !trigger) return;
         if (lenisInstance) lenisInstance.scrollTo(trigger.end);
         else window.scrollTo(0, trigger.end);
     };
