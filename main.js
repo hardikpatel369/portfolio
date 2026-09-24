@@ -696,12 +696,160 @@ const initSpotlight = () => {
     [link, ...contactLinks].forEach((el) => el.addEventListener('focus', revealOnFocus));
 };
 
-// 11. Dynamic Year Update
+// 11. Overlay Menu - layered wipe, panel reveal, masked link slide-up (one reversible timeline)
+const initMenu = () => {
+    const nav = document.querySelector('.site-nav');
+    const toggle = nav?.querySelector('.site-nav__toggle');
+    const menu = document.getElementById('site-menu');
+    if (!toggle || !menu) return;
+
+    const root = document.documentElement;
+    const page = document.getElementById('smooth-wrapper');
+    const toggleLabel = toggle.querySelector('.site-nav__toggle-label');
+    const panel = menu.querySelector('.menu__panel');
+    const bgs = menu.querySelectorAll('.menu__bg');
+    const primaryLinks = [...menu.querySelectorAll('.menu__link')];
+    const revealGroups = [
+        menu.querySelectorAll('.menu__col--meta .menu__reveal'),
+        menu.querySelectorAll('.menu__primary .menu__reveal'),
+        menu.querySelectorAll('.menu__secondary .menu__reveal'),
+    ];
+    // Reduced motion: same sequence, near-instant
+    const speed = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 8 : 1;
+
+    // "Email me" uses the same pre-filled email as the Contact Me button
+    const email = menu.querySelector('[data-menu-email]');
+    if (email && CONFIG.spotlight?.href) email.setAttribute('href', CONFIG.spotlight.href);
+
+    let isOpen = false;
+
+    const finishClose = () => {
+        menu.classList.remove('is-visible');
+        root.classList.remove('menu-open');
+        if (lenisInstance) lenisInstance.start();
+    };
+
+    gsap.set(bgs, { scaleY: 0, transformOrigin: '50% 0%' });
+    const tl = gsap.timeline({ paused: true, onReverseComplete: finishClose });
+    tl.to(bgs, { scaleY: 1, duration: 0.75, stagger: 0.1, ease: 'power3.inOut' })
+        .to(panel, {
+            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+            duration: 0.75,
+            ease: 'power3.inOut',
+        }, '-=0.6');
+    revealGroups.forEach((els) => {
+        if (!els.length) return;
+        tl.fromTo(els, { yPercent: 105 }, {
+            yPercent: 0,
+            duration: 0.75,
+            stagger: 0.05,
+            ease: 'power3.out',
+        }, 0.85);
+    });
+
+    const setToggleState = (open) => {
+        nav.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        if (toggleLabel) toggleLabel.textContent = open ? 'Close' : 'Menu';
+    };
+
+    // Pinned sections sit inside a pin-spacer; its box is the real scroll position of the section
+    const anchorFor = (name) => {
+        const el = document.getElementById(name);
+        if (!el) return null;
+        return el.parentElement?.classList.contains('pin-spacer') ? el.parentElement : el;
+    };
+
+    // Highlight the section currently in view
+    const markCurrent = () => {
+        let current = null;
+        primaryLinks.forEach((link) => {
+            const anchor = anchorFor(link.dataset.menuTarget);
+            if (anchor && anchor.getBoundingClientRect().top <= window.innerHeight * 0.4) current = link;
+        });
+        primaryLinks.forEach((link) => {
+            if (link === current) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+        });
+    };
+
+    const open = ({ focusFirst = false } = {}) => {
+        if (isOpen) return;
+        isOpen = true;
+        markCurrent();
+        menu.classList.add('is-visible');
+        menu.inert = false;
+        if (page) page.inert = true;
+        root.classList.add('menu-open');
+        if (lenisInstance) lenisInstance.stop();
+        setToggleState(true);
+        tl.timeScale(speed).play();
+        // Keyboard users land on the first link; mouse/touch users don't get a stray focus ring
+        if (focusFirst) primaryLinks[0]?.focus({ preventScroll: true });
+    };
+
+    const close = ({ returnFocus = true } = {}) => {
+        if (!isOpen) return;
+        isOpen = false;
+        menu.inert = true;
+        if (page) page.inert = false;
+        setToggleState(false);
+        if (tl.progress() === 0) {
+            tl.pause(0);
+            finishClose();
+        } else {
+            tl.timeScale(speed * 1.5).reverse();
+        }
+        if (returnFocus) toggle.focus({ preventScroll: true });
+    };
+
+    // Jump (behind the overlay) or glide (menu closed) to a section.
+    // "contact" goes to the page end, where the Contact Me scene is fully revealed.
+    const goTo = (name, immediate) => {
+        let target;
+        if (name === 'top') target = 0;
+        else if (name === 'contact') target = document.documentElement.scrollHeight;
+        else target = anchorFor(name);
+        if (target === null) return;
+
+        if (lenisInstance) {
+            lenisInstance.scrollTo(target, { immediate, force: true });
+        } else {
+            const y = typeof target === 'number' ? target : target.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: y, behavior: immediate ? 'auto' : 'smooth' });
+        }
+    };
+
+    const onTargetClick = (e) => {
+        const link = e.target.closest('[data-menu-target]');
+        if (!link) return;
+        e.preventDefault();
+        if (isOpen) {
+            goTo(link.dataset.menuTarget, true);
+            close();
+        } else {
+            goTo(link.dataset.menuTarget, false);
+        }
+    };
+
+    // detail === 0 means the click came from the keyboard (Enter/Space)
+    toggle.addEventListener('click', (e) => (isOpen ? close() : open({ focusFirst: e.detail === 0 })));
+    nav.addEventListener('click', onTargetClick);
+    menu.addEventListener('click', onTargetClick);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) close();
+    });
+
+    nav.classList.add('is-ready');
+};
+
+// 12. Dynamic Year Update
 const initYearUpdate = () => {
-    const yearSpan = document.getElementById('year');
-    if (yearSpan) {
-        yearSpan.textContent = new Date().getFullYear();
-    }
+    const year = new Date().getFullYear();
+    document.querySelectorAll('[data-year]').forEach((el) => {
+        el.textContent = year;
+    });
 };
 
 // 9. Dynamic Hero Images & Favicon
@@ -787,6 +935,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof initSpotlight === 'function') initSpotlight();
         if (typeof initSectionTitles === 'function') initSectionTitles();
         if (typeof initContactLinks === 'function') initContactLinks();
+        if (typeof initMenu === 'function') initMenu();
         if (typeof initImageTrail === 'function') initImageTrail();
     };
 

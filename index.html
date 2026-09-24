@@ -48,12 +48,88 @@
 
 
 
+    <!-- Site Nav: logo + menu toggle (shown by initMenu once the preloader is done) -->
+    <header class="site-nav">
+        <a href="#top" class="site-nav__logo" data-menu-target="top" aria-label="Hardik Patel, back to top">
+            <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <path d="M 100,100 C 60,60 40,240 90,240 C 120,240 130,140 200,140 C 260,140 250,40 210,60
+                         C 170,80 190,240 230,240 C 250,240 270,180 285,210 C 300,240 330,180 345,210
+                         C 370,240 470,190 485,160" fill="none" stroke="currentColor" stroke-width="14"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </a>
+        <button type="button" class="site-nav__toggle" aria-expanded="false" aria-controls="site-menu"
+            aria-label="Open menu">
+            <span class="site-nav__toggle-label" aria-hidden="true">Menu</span>
+            <span class="site-nav__toggle-lines" aria-hidden="true"><span></span><span></span></span>
+        </button>
+    </header>
+
+    <!-- Overlay Menu (animated by initMenu) -->
+    <div class="menu" id="site-menu" role="dialog" aria-modal="true" aria-label="Site menu" inert>
+        <div class="menu__bg" aria-hidden="true"></div>
+        <div class="menu__bg" aria-hidden="true"></div>
+        <div class="menu__bg" aria-hidden="true"></div>
+        <div class="menu__bg" aria-hidden="true"></div>
+
+        <div class="menu__panel" data-lenis-prevent>
+            <div class="menu__col menu__col--meta">
+                <div class="menu__group">
+                    <span class="menu__label"><span class="menu__mask"><span class="menu__reveal">Socials</span></span></span>
+                    <a href="https://github.com/hardikpatel369" class="menu__small-link" target="_blank"
+                        rel="noopener noreferrer"><span class="menu__mask"><span class="menu__reveal">GitHub</span></span></a>
+                    <a href="https://www.linkedin.com/in/hardikpatel369/" class="menu__small-link" target="_blank"
+                        rel="noopener noreferrer"><span class="menu__mask"><span class="menu__reveal">LinkedIn</span></span></a>
+                </div>
+                <div class="menu__group menu__group--legal">
+                    <span class="menu__fine"><span class="menu__mask"><span class="menu__reveal">Remote / Surat, Gujarat</span></span></span>
+                    <span class="menu__fine"><span class="menu__mask"><span class="menu__reveal">&copy; <span data-year></span> Hardik Patel</span></span></span>
+                </div>
+            </div>
+
+            <div class="menu__col menu__col--main">
+                <nav class="menu__primary" aria-label="Sections">
+                    <a href="#top" class="menu__link" data-menu-target="top">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">01</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">Home</span></span>
+                    </a>
+                    <a href="#about" class="menu__link" data-menu-target="about">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">02</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">About</span></span>
+                    </a>
+                    <a href="#stack" class="menu__link" data-menu-target="stack">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">03</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">Stack</span></span>
+                    </a>
+                    <a href="#projects" class="menu__link" data-menu-target="projects">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">04</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">Work</span></span>
+                    </a>
+                    <a href="#experience" class="menu__link" data-menu-target="experience">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">05</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">Experience</span></span>
+                    </a>
+                    <a href="#contact" class="menu__link" data-menu-target="contact">
+                        <span class="menu__index" aria-hidden="true"><span class="menu__mask"><span class="menu__reveal">06</span></span></span>
+                        <span class="menu__mask"><span class="menu__reveal">Contact</span></span>
+                    </a>
+                </nav>
+
+                <div class="menu__secondary">
+                    <span class="menu__label"><span class="menu__mask"><span class="menu__reveal">Get in touch</span></span></span>
+                    <a href="mailto:patelhardik94271@gmail.com" class="menu__small-link" data-menu-email><span class="menu__mask"><span class="menu__reveal">Email me</span></span></a>
+                    <a href="tel:+918849569553" class="menu__small-link"><span class="menu__mask"><span class="menu__reveal">Call</span></span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Smooth Scroll Wrapper -->
     <div id="smooth-wrapper">
         <div id="smooth-content">
 
             <!-- Hero Section -->
-            <section class="hero" data-theme="dark">
+            <section class="hero" id="top" data-theme="dark">
                 <div class="hero__bg-grid"></div>
 
                 <!-- Image Trail Container (Decorative) -->
@@ -117,7 +193,7 @@
             </section>
 
             <!-- Skills Section -->
-            <section class="skills" data-theme="dark">
+            <section class="skills" id="stack" data-theme="dark">
                 <div class="container">
                     <h2 class="section-title section-title--center">TECHNOLOGY STACK</h2>
                     <div class="skills__cloud">
@@ -250,7 +326,7 @@
                                         <span class="exp-card__period">Aug 2025 - Current</span>
                                         <h3 class="exp-card__role">Freelance Technologist</h3>
                                         <p class="exp-card__company">Self-Employed</p>
-                                        <p class="exp-card__location">Remote / London, UK</p>
+                                        <p class="exp-card__location">Remote / Surat, Gujarat</p>
                                     </div>
                                     <ul class="exp-card__list">
                                         <li class="exp-card__item">
@@ -441,7 +517,7 @@
                     </a>
                 </div>
 
-                <p class="spotlight__credits">&copy; <span id="year"></span> HARDIK PATEL.</p>
+                <p class="spotlight__credits">&copy; <span id="year" data-year></span> HARDIK PATEL.</p>
             </section>
 
         </div>
