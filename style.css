@@ -526,12 +526,14 @@ section {
   height: 100%;
 }
 
+/* Lush Salon - its brand rose #D1496F into a deep rose */
 .project-card__img-placeholder--1 {
-  background: linear-gradient(45deg, #1E293B, #0F172A);
+  background: linear-gradient(45deg, #D1496F, #5A1428);
 }
 
+/* Ebb - its brand sky blue #34CDFA into a deep blue */
 .project-card__img-placeholder--2 {
-  background: linear-gradient(45deg, #10B981, #064E3B);
+  background: linear-gradient(45deg, #34CDFA, #0A4560);
 }
 
 .project-card__img-placeholder--3 {
@@ -540,6 +542,11 @@ section {
 
 .project-card__img-placeholder--4 {
   background: linear-gradient(45deg, #F59E0B, #7C2D12);
+}
+
+/* Kie Studio - its brand accent #FFC53D into a deep gold */
+.project-card__img-placeholder--5 {
+  background: linear-gradient(45deg, #FFC53D, #6B4A00);
 }
 
 /* ===================================
