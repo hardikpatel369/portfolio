@@ -705,7 +705,6 @@ const initMenu = () => {
 
     const root = document.documentElement;
     const page = document.getElementById('smooth-wrapper');
-    const toggleLabel = toggle.querySelector('.site-nav__toggle-label');
     const panel = menu.querySelector('.menu__panel');
     const bgs = menu.querySelectorAll('.menu__bg');
     const primaryLinks = [...menu.querySelectorAll('.menu__link')];
@@ -751,7 +750,6 @@ const initMenu = () => {
         nav.classList.toggle('is-open', open);
         toggle.setAttribute('aria-expanded', String(open));
         toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-        if (toggleLabel) toggleLabel.textContent = open ? 'Close' : 'Menu';
     };
 
     // Pinned sections sit inside a pin-spacer; its box is the real scroll position of the section
