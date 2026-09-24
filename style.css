@@ -970,10 +970,17 @@ section {
   }
 }
 
+/* Phones/touch: JS places the group (inline `top`), see measure(compact).
+   No will-change here - iOS Safari clips SVG overflow to a promoted layer's box,
+   which cut the dropped "I" / Contact Me bar in half. */
+@media (max-width: 768px), (pointer: coarse) {
+  .spotlight__header {
+    will-change: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .spotlight__header {
-    top: 22vh;
-    top: 22svh;
     padding: 1.5rem var(--container-padding);
   }
 }

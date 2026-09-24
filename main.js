@@ -523,8 +523,11 @@ const initSpotlight = () => {
 
     // Geometry is derived from the live layout, so the "I" always lands in the empty space
     // under the stack and at a readable size, whatever the viewport.
-    let geo = { shiftStep: 0, slide: 0, letterScale: 1 };
-    const measure = () => {
+    let geo = { shiftStep: 0, slide: 0, letterScale: 1, wordBottom: 0 };
+    // pinned (desktop): stack position comes from CSS and the bar is centred in the space under it.
+    // compact (phones): the whole group - stack, bar, icons - is placed as one block a little
+    // above centre, so there's no dead screen of space before the word scrolls in.
+    const measure = (compact) => {
         const style = getComputedStyle(front);
         const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
         const padTop = parseFloat(style.paddingTop);
@@ -532,35 +535,55 @@ const initSpotlight = () => {
         if (!k) return;
 
         const vw = window.innerWidth;
-        const headerTop = front.offsetTop;
         const headerH = front.offsetHeight;
         const shiftStep = vw < 1000 ? 20 : 6;
         const frontScale = 1 - last * opts.scaleStep;
         const frontShift = last * shiftStep;
-        const stackBottom = headerTop + headerH + frontShift;
-        // Usable space runs from the stack down to the copyright line (or the section bottom)
+        // Usable space runs down to the copyright line (or the section bottom)
         const credits = section.querySelector('.spotlight__credits');
         const bottomLimit = credits ? credits.offsetTop - 16 : section.clientHeight;
-        const freeSpace = Math.max(bottomLimit - stackBottom, 0);
-        // Fixed space around the bar: gap above it, the icon row and gaps below it
-        const reservedH = (contactLinksRow
-            ? contactLinksRow.offsetHeight + opts.linksGap + opts.linksBottomGap
-            : 0) + opts.barTopGap;
+        const linksRowH = contactLinksRow ? contactLinksRow.offsetHeight : 0;
 
-        // Finished bar length on screen; keep its thickness inside what's left after the icons
         const { vw: vwFrac, min, max } = opts.barWidth;
-        let barLen = gsap.utils.clamp(min, max, vw * vwFrac);
-        barLen = Math.min(barLen, (Math.max(freeSpace - reservedH, 0) * 0.9 * box.height) / box.width, vw - 32);
-        barLen = Math.max(barLen, 120);
-        const barThickness = (barLen * box.width) / box.height;
+        let barLen = Math.min(gsap.utils.clamp(min, max, vw * vwFrac), vw - 32);
+        let headerTop;
+        let blockTop;
 
-        const blockTop = stackBottom + opts.barTopGap + Math.max((freeSpace - barThickness - reservedH) / 2, 0);
+        if (compact) {
+            const thickness = (barLen * box.width) / box.height;
+            const groupH = headerH + frontShift + opts.barTopGap + thickness + opts.linksGap + linksRowH;
+            headerTop = Math.max(16, (bottomLimit - groupH) * opts.compactTopRatio);
+            headers.forEach((header) => { header.style.top = `${headerTop}px`; });
+            blockTop = headerTop + headerH + frontShift + opts.barTopGap;
+        } else {
+            headers.forEach((header) => { header.style.top = ''; });
+            headerTop = front.offsetTop;
+            const freeSpace = Math.max(bottomLimit - (headerTop + headerH + frontShift), 0);
+            // Fixed space around the bar: gap above it, the icon row and gaps below it
+            const reservedH = opts.barTopGap + (contactLinksRow
+                ? linksRowH + opts.linksGap + opts.linksBottomGap
+                : 0);
+            // Keep the bar's thickness inside what's left after the icons
+            barLen = Math.min(barLen, (Math.max(freeSpace - reservedH, 0) * 0.9 * box.height) / box.width);
+            barLen = Math.max(barLen, 120);
+            const thickness = (barLen * box.width) / box.height;
+            blockTop = headerTop + headerH + frontShift + opts.barTopGap + Math.max((freeSpace - thickness - reservedH) / 2, 0);
+        }
+
+        const barThickness = (barLen * box.width) / box.height;
         const target = blockTop + barThickness / 2;
         if (contactLinksRow) contactLinksRow.style.top = `${target + barThickness / 2 + opts.linksGap}px`;
 
         // Header scales from its bottom edge, so solve for the SVG-unit slide that puts the centre on target
+        const stackBottom = headerTop + headerH + frontShift;
         const slide = (headerH - padTop - (stackBottom - target) / frontScale) / k - cy;
-        geo = { shiftStep, slide, letterScale: barLen / (box.height * k * frontScale) };
+        geo = {
+            shiftStep,
+            slide,
+            letterScale: barLen / (box.height * k * frontScale),
+            // Bottom of the word before it spreads out, in section coordinates
+            wordBottom: headerTop + headerH,
+        };
     };
 
     let isRevealed = false;
@@ -627,12 +650,13 @@ const initSpotlight = () => {
         reduce: '(prefers-reduced-motion: reduce)',
     }, (ctx) => {
         const { pinned, reduce } = ctx.conditions;
-        measure();
+        const compact = !pinned;
+        measure(compact);
 
         if (reduce) {
             // No scroll choreography: show the finished composition, keep it laid out on refresh
             render(1, true);
-            const relayout = () => { measure(); render(1, true); };
+            const relayout = () => { measure(compact); render(1, true); };
             ScrollTrigger.addEventListener('refresh', relayout);
             trigger = null;
             return () => ScrollTrigger.removeEventListener('refresh', relayout);
@@ -652,12 +676,13 @@ const initSpotlight = () => {
                 : {
                     // Plays while the section scrolls into view, no pin. Finishes a little before
                     // the page bottom so a hidden/shown address bar can't leave it half done.
-                    start: 'top 75%', // word (22svh into the section) is on screen by now
+                    // Start only once the whole word is on screen (its bottom plus a small margin)
+                    start: () => { measure(compact); return `top+=${geo.wordBottom + 24} bottom`; },
                     end: `bottom bottom+=${opts.touchEndOffset}`,
                     scrub: opts.touchScrub,
                 }),
             invalidateOnRefresh: true,
-            onRefresh: (self) => { measure(); render(self.progress, true); },
+            onRefresh: (self) => { measure(compact); render(self.progress, true); },
             onUpdate: (self) => render(self.progress),
         });
     });

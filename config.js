@@ -66,6 +66,8 @@ export const CONFIG = {
         scrollLength: 1.5,
         /** Touch/phone (no pin): finish this many px before the page bottom (address-bar slack) */
         touchEndOffset: 120,
+        /** Touch/phone: where the whole group sits in the section (0 = top, 0.5 = centred) */
+        compactTopRatio: 0.4,
         /** Touch/phone: seconds the animation takes to catch up to the finger (smooths flings) */
         touchScrub: 0.5,
         /** Scroll progress where the label scrambles in */
