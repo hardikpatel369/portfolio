@@ -334,14 +334,10 @@ const initAbout = () => {
     // Split once; matchMedia reverts the tweens, the wrappers stay harmless
     const wordSplits = words.map((el) => new SplitType(el, { types: 'words, chars' }));
 
-    // Touch screens: the pinned slide needs scrolling on the JS thread, or native momentum runs ahead of the pin
-    // and it judders; this also stops the address bar showing/hiding (which would move the pin's end).
-    // Page-wide and touch-only - toggling it at the section's edges would stop a flick dead. Mouse/trackpad stay native.
+    // Touch screens keep native scrolling. Don't add ScrollTrigger.normalizeScroll here: it can't be scoped to
+    // one section, so it moved the whole page's scrolling onto the JS thread and made every section feel laggy.
+    // The pin stays steady via ignoreMobileResize (address bar showing/hiding won't re-measure it) + 100svh in CSS.
     ScrollTrigger.config({ ignoreMobileResize: true });
-    gsap.matchMedia().add('(pointer: coarse) and (prefers-reduced-motion: no-preference)', () => {
-        ScrollTrigger.normalizeScroll({ type: 'touch', allowNestedScroll: true }); // nested: the menu overlay keeps its own scroll
-        return () => ScrollTrigger.normalizeScroll(false);
-    });
 
     const mm = gsap.matchMedia();
     mm.add({

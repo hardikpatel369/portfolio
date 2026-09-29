@@ -1799,10 +1799,8 @@ html.menu-open body {
     letter-spacing: 0.15em;
   }
 
-  /* Disable noise overlay on mobile for performance */
-  .noise-overlay {
-    display: none;
-  }
+  /* Noise overlay stays on for phones too, so the background matches desktop. It's one fixed layer whose
+     texture is rasterised once, so scrolling doesn't repaint it */
 }
 
 /* ===================================
