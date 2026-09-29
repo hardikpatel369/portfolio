@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,100..900;1,100..900&family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=Oswald:wght@200..700&family=Space+Grotesk:wght@300;400;500;600;700&family=Teko:wght@300..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@200..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="./style.css" />
 </head>
@@ -149,47 +149,127 @@
                 </div>
             </section>
 
-            <!-- About Section (Horizontal Narrative) -->
-            <section class="about" id="about">
+            <!-- About Section (pinned horizontal line on desktop, wrapped + stacked on touch/phones - see initAbout) -->
+            <section class="about" id="about" aria-label="About Hardik">
+                <!-- Shared paint for the About shapes: gradients + grain (kept rendered, 0x0, so url(#id) resolves everywhere) -->
+                <svg class="about__defs" width="0" height="0" aria-hidden="true" focusable="false">
+                    <defs>
+                        <radialGradient id="about-g-porcelain" cx="30%" cy="25%" r="85%">
+                            <stop offset="0" stop-color="#FFFFFF" />
+                            <stop offset=".45" stop-color="#E0DDD8" />
+                            <stop offset="1" stop-color="#7A7875" />
+                        </radialGradient>
+                        <radialGradient id="about-g-graphite" cx="50%" cy="0%" r="110%">
+                            <stop offset="0" stop-color="#8A8A8A" />
+                            <stop offset=".5" stop-color="#3A3A3A" />
+                            <stop offset="1" stop-color="#1C1C1C" />
+                        </radialGradient>
+                        <linearGradient id="about-g-silver" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#EDEDED" />
+                            <stop offset=".55" stop-color="#ABABAB" />
+                            <stop offset="1" stop-color="#4A4A4A" />
+                        </linearGradient>
+                        <!-- userSpaceOnUse: a flat line has a zero-height box, and a box-sized gradient would paint nothing -->
+                        <linearGradient id="about-g-stroke" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="200" y2="0">
+                            <stop offset="0" stop-color="#ABABAB" />
+                            <stop offset=".5" stop-color="#EDEDED" />
+                            <stop offset="1" stop-color="#ABABAB" />
+                        </linearGradient>
+                        <linearGradient id="about-g-smile" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="120" y2="0">
+                            <stop offset="0" stop-color="#ABABAB" />
+                            <stop offset=".5" stop-color="#EDEDED" />
+                            <stop offset="1" stop-color="#ABABAB" />
+                        </linearGradient>
+                        <filter id="about-grain-f" x="0" y="0" width="100%" height="100%">
+                            <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch" />
+                            <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 -0.35" />
+                        </filter>
+                        <pattern id="about-grain" width="160" height="160" patternUnits="userSpaceOnUse">
+                            <rect width="160" height="160" filter="url(#about-grain-f)" />
+                        </pattern>
+                    </defs>
+                </svg>
+
                 <div class="about__track">
-                    <!-- Panel 1: The Transition -->
-                    <div class="about__panel about__panel--1">
-                        <div class="about__content">
-                            <span class="about__label">01 / Origin</span>
-                            <h2 class="about__heading">LEADERSHIP &amp; STRATEGY</h2>
-                            <p class="about__text">
-                                With a strong foundation as a <strong>3S Manager</strong>, I possess excellent
-                                <strong>managerial skills</strong>. I don't just code; I lead projects, optimize
-                                workflows, and engineer efficiency for scalable solutions.
-                            </p>
+                    <!-- Intro: label chips + statement + shape cluster -->
+                    <div class="about__panel about__panel--intro">
+                        <div class="about__intro">
+                            <h2 class="about__chips">
+                                <span class="about__chip about__chip--light">About Hardik</span>
+                                <span class="about__chip about__chip--dark about__chip--hinge">Operator
+                                    <svg class="about__arrow" viewBox="0 0 26 14" aria-hidden="true" focusable="false">
+                                        <path d="M1 7H24M18 1.5L24 7L18 12.5" fill="none" stroke="currentColor"
+                                            stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span class="about__sr">to</span> Engineer</span>
+                            </h2>
+                            <p class="about__statement">I turn messy real-world operations into calm, fast software,
+                                designed, built and shipped end to end.</p>
+                        </div>
+
+                        <div class="about__flair" aria-hidden="true">
+                            <div class="about__shape about__shape--dome"><svg viewBox="0 0 248 124">
+                                <path d="M0 124A124 124 0 0 1 248 124Z" fill="url(#about-g-graphite)" />
+                                <path d="M0 124A124 124 0 0 1 248 124Z" fill="url(#about-grain)" class="about__grain" />
+                            </svg></div>
+                            <div class="about__shape about__shape--flower"><svg viewBox="0 0 248 248">
+                                <path d="M62 0a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM186 0a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM62 124a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM186 124a62 62 0 1 1 0 124a62 62 0 1 1 0-124Z" fill="url(#about-g-porcelain)" />
+                                <path d="M62 0a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM186 0a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM62 124a62 62 0 1 1 0 124a62 62 0 1 1 0-124ZM186 124a62 62 0 1 1 0 124a62 62 0 1 1 0-124Z" fill="url(#about-grain)" class="about__grain" />
+                            </svg></div>
+                            <div class="about__shape about__shape--ring"><svg viewBox="0 0 120 120">
+                                <path d="M60 0a60 60 0 1 1 0 120a60 60 0 1 1 0-120Zm0 32a28 28 0 1 0 0 56a28 28 0 1 0 0-56Z" fill="url(#about-g-silver)" fill-rule="evenodd" />
+                                <path d="M60 0a60 60 0 1 1 0 120a60 60 0 1 1 0-120Zm0 32a28 28 0 1 0 0 56a28 28 0 1 0 0-56Z" fill="url(#about-grain)" fill-rule="evenodd" class="about__grain" />
+                            </svg></div>
+                            <div class="about__shape about__shape--hourglass"><svg viewBox="0 0 52 62">
+                                <path d="M0 0H52L30 31L52 62H0L22 31Z" fill="url(#about-g-silver)" />
+                                <path d="M0 0H52L30 31L52 62H0L22 31Z" fill="url(#about-grain)" class="about__grain" />
+                            </svg></div>
+                            <div class="about__shape about__shape--spark"><svg viewBox="0 0 100 100">
+                                <path d="M50 0C54 34 66 46 100 50C66 54 54 66 50 100C46 66 34 54 0 50C34 46 46 34 50 0Z" fill="url(#about-g-porcelain)" />
+                            </svg></div>
                         </div>
                     </div>
 
-                    <!-- Panel 2: The Philosophy -->
-                    <div class="about__panel about__panel--2">
-                        <div class="about__content">
-                            <span class="about__label">02 / Bridge</span>
-                            <h2 class="about__heading">FREELANCE &amp; FULL STACK</h2>
-                            <p class="about__text">
-                                As a <strong>Freelance Technologist</strong>, I bring versatile expertise. From
-                                <strong>Kotlin
-                                    &amp; React Native</strong> mobile apps to robust <strong>Full Stack</strong> web
-                                ecosystems, I build whatever is needed.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Panel 3: The Mission -->
-                    <div class="about__panel about__panel--3">
-                        <div class="about__content">
-                            <span class="about__label">03 / Vision</span>
-                            <h2 class="about__heading">DIGITAL ALCHEMY</h2>
-                            <p class="about__text">
-                                Now, I fuse that operational rigor with <strong>Creative Frontend</strong> and
-                                <strong>Generative AI</strong> tools for creators. I don't just
-                                build sites; I architect immersive digital stories.
-                            </p>
-                        </div>
+                    <!-- One continuous line: words, tilted chips, and SVG marks riding above/below.
+                         Each .about__anchor is a zero-width hook, so marks stay glued to their word at any size.
+                         data-motion: loop = runs on its own, scrub = follows the scroll, draw = stroke draws with scroll -->
+                    <div class="about__panel about__panel--line">
+                        <p class="about__line">
+                            <!-- I BUILD: a gear -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--above" data-motion="gear" style="--x:0.45em; --s:0.6em">
+                                <svg viewBox="0 0 120 120"><path d="M101.6 42.8L104.4 53.0L115.7 54.3L115.7 65.7L104.4 67.0L101.6 77.2L96.4 86.5L103.4 95.4L95.4 103.4L86.5 96.4L77.2 101.6L67.0 104.4L65.7 115.7L54.3 115.7L53.0 104.4L42.8 101.6L33.5 96.4L24.6 103.4L16.6 95.4L23.6 86.5L18.4 77.2L15.6 67.0L4.3 65.7L4.3 54.3L15.6 53.0L18.4 42.8L23.6 33.5L16.6 24.6L24.6 16.6L33.5 23.6L42.8 18.4L53.0 15.6L54.3 4.3L65.7 4.3L67.0 15.6L77.2 18.4L86.5 23.6L95.4 16.6L103.4 24.6L96.4 33.5ZM60 42a18 18 0 1 0 0 36a18 18 0 1 0 0-36Z" fill="url(#about-g-silver)" fill-rule="evenodd" /><path d="M101.6 42.8L104.4 53.0L115.7 54.3L115.7 65.7L104.4 67.0L101.6 77.2L96.4 86.5L103.4 95.4L95.4 103.4L86.5 96.4L77.2 101.6L67.0 104.4L65.7 115.7L54.3 115.7L53.0 104.4L42.8 101.6L33.5 96.4L24.6 103.4L16.6 95.4L23.6 86.5L18.4 77.2L15.6 67.0L4.3 65.7L4.3 54.3L15.6 53.0L18.4 42.8L23.6 33.5L16.6 24.6L24.6 16.6L33.5 23.6L42.8 18.4L53.0 15.6L54.3 4.3L65.7 4.3L67.0 15.6L77.2 18.4L86.5 23.6L95.4 16.6L103.4 24.6L96.4 33.5ZM60 42a18 18 0 1 0 0 36a18 18 0 1 0 0-36Z" fill="url(#about-grain)" fill-rule="evenodd" class="about__grain" /></svg>
+                            </span></span><span class="about__word">I build</span></span>
+                            <span class="about__chip about__chip--light about__chip--inline" style="--tilt:-5deg" data-tilt="-5">Full-stack</span>
+                            <!-- FULL-STACK products: three stacked layers that spread apart -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--below" data-motion="stack" style="--x:1em; --s:0.75em; --gap:0.22em">
+                                <svg viewBox="0 0 120 110"><path class="about__layer about__layer--3" d="M60 50L120 80L60 110L0 80Z" fill="url(#about-g-graphite)" /><path class="about__layer about__layer--2" d="M60 25L120 55L60 85L0 55Z" fill="url(#about-g-silver)" /><path class="about__layer about__layer--1" d="M60 0L120 30L60 60L0 30Z" fill="url(#about-g-porcelain)" /></svg>
+                            </span></span><span class="about__word">products,</span></span>
+                            <!-- MOBILE: a phone that buzzes with a notification -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--above" data-motion="phone" style="--x:1.5em; --s:0.46em">
+                                <svg viewBox="0 0 80 120"><path d="M20 0h40a16 16 0 0 1 16 16v88a16 16 0 0 1-16 16H20a16 16 0 0 1-16-16V16A16 16 0 0 1 20 0Z" fill="url(#about-g-silver)" /><rect x="11" y="12" width="58" height="96" rx="9" fill="#1C1C1C" /><rect x="30" y="17" width="20" height="6" rx="3" fill="#ABABAB" /><circle class="about__phone-dot" cx="64" cy="10" r="11" fill="#EDEDED" /></svg>
+                            </span></span><span class="about__chip about__chip--dark about__chip--inline" style="--tilt:6deg" data-tilt="6">Mobile</span></span>
+                            <!-- apps: a 2x2 app grid whose tiles pulse like apps launching -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--below" data-motion="apps" style="--x:0.55em; --s:0.56em; --gap:0.14em">
+                                <svg viewBox="0 0 100 100"><rect class="about__tile" x="0" y="0" width="44" height="44" rx="12" fill="url(#about-g-porcelain)" /><rect class="about__tile" x="56" y="0" width="44" height="44" rx="12" fill="url(#about-g-silver)" /><rect class="about__tile" x="56" y="56" width="44" height="44" rx="12" fill="url(#about-g-porcelain)" /><rect class="about__tile" x="0" y="56" width="44" height="44" rx="12" fill="url(#about-g-silver)" /></svg>
+                            </span></span><span class="about__word">apps</span></span>
+                            <span class="about__word">and</span>
+                            <!-- GEN AI: twinkling AI sparkles -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--above" data-motion="sparkles" style="--x:1.2em; --s:0.8em">
+                                <svg viewBox="0 0 120 100"><path class="about__sparkle about__sparkle--big" d="M42 12C45 40 54 49 82 52C54 55 45 64 42 92C39 64 30 55 2 52C30 49 39 40 42 12Z" fill="url(#about-g-porcelain)" /><path class="about__sparkle about__sparkle--small" d="M98 0C99 12 103 16 115 17C103 18 99 22 98 34C97 22 93 18 81 17C93 16 97 12 98 0Z" fill="url(#about-g-porcelain)" /></svg>
+                            </span></span><span class="about__chip about__chip--light about__chip--inline" style="--tilt:-4deg" data-tilt="-4">Gen AI</span></span>
+                            <!-- TOOLS: a face under the OO - sad, smiles at the centre of the screen, sad again after -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--below about__mark--smile" data-motion="face" style="--x:0.5em; --s:1.1em">
+                                <svg viewBox="0 0 120 80"><path class="about__smile" d="M14 58C14 12 106 12 106 58" fill="none" stroke="url(#about-g-smile)" stroke-width="20" stroke-linecap="round" /></svg>
+                            </span></span><span class="about__word">tools</span></span>
+                            <!-- that feel: a heartbeat line that draws itself toward ALIVE -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--above" data-motion="pulse-line" style="--x:0.1em; --s:2.3em">
+                                <svg viewBox="0 0 200 80"><path class="about__pulse-line" d="M2 52H62L74 52L86 12L102 76L116 32L126 52H198" fill="none" stroke="url(#about-g-stroke)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            </span></span><span class="about__word">that feel</span></span>
+                            <!-- ALIVE: a beating heart, beside the word -->
+                            <span class="about__pair"><span class="about__anchor"><span class="about__mark about__mark--beside" data-motion="heart" style="--x:2.62em; --s:0.7em; --ratio:0.92">
+                                <svg viewBox="0 0 100 92"><path d="M50 88C20 66 4 48 4 30C4 15 16 4 30 4C39 4 46 9 50 16C54 9 61 4 70 4C84 4 96 15 96 30C96 48 80 66 50 88Z" fill="url(#about-g-porcelain)" /><path d="M50 88C20 66 4 48 4 30C4 15 16 4 30 4C39 4 46 9 50 16C54 9 61 4 70 4C84 4 96 15 96 30C96 48 80 66 50 88Z" fill="url(#about-grain)" class="about__grain" /></svg>
+                            </span></span><span class="about__word">alive.</span></span>
+                        </p>
                     </div>
                 </div>
             </section>

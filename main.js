@@ -315,21 +315,285 @@ const initHero = () => {
     });
 };
 
-// 3. Horizontal Scroll (About) - Works on all devices
-const initAbout = () => {
-    const track = document.querySelector('.about__track');
+// 3. About - gsap.com-style: hinged label, then one pinned line that slides sideways.
+// Words, chips and SVG marks reveal as they enter; marks either loop on their own or follow the scroll.
+// Desktop (fine pointer) pins; touch/phones get the same beats with the line wrapped vertically,
+// because a pinned section jitters under native momentum scroll. Keep ABOUT_HORIZONTAL in sync with style.css.
+const ABOUT_HORIZONTAL = '(pointer: fine) and (min-width: 769px) and (prefers-reduced-motion: no-preference)';
 
-    gsap.to(track, {
-        xPercent: -66.666, // Move 2/3rds (since 3 panels)
-        ease: 'none',
-        scrollTrigger: {
-            trigger: '.about',
-            pin: true,
-            scrub: 1,
-            start: 'top top',
-            end: '+=3000' // Scroll distance
+const initAbout = () => {
+    const section = document.querySelector('.about');
+    if (!section) return;
+
+    const track = section.querySelector('.about__track');
+    const intro = section.querySelector('.about__panel--intro');
+    const words = gsap.utils.toArray('.about__word', section);
+    const chips = gsap.utils.toArray('.about__chip--inline', section);
+    const marks = gsap.utils.toArray('.about__mark', section);
+
+    // Split once; matchMedia reverts the tweens, the wrappers stay harmless
+    const wordSplits = words.map((el) => new SplitType(el, { types: 'words, chars' }));
+
+    const mm = gsap.matchMedia();
+    mm.add({
+        // matchMedia only runs the callback when some condition matches, so keep one that always does
+        // (without it, phones - neither horizontal nor reduce - would get no animation at all)
+        any: 'all',
+        horizontal: ABOUT_HORIZONTAL,
+        reduce: '(prefers-reduced-motion: reduce)',
+    }, (ctx) => {
+        const { horizontal, reduce } = ctx.conditions;
+        if (reduce) return; // Static, wrapped, fully visible
+
+        // Intro: only the "Operator → Engineer" hinge chip animates here.
+        // The "About Hardik" chip and the statement paragraph are static and always fully visible.
+        // Starts once the section's top edge is 20% from the top of the viewport: 80% of the section on screen
+        // (on phones the section is taller than the screen, so this means it fills 80% of the viewport).
+        // Reverses if you scroll back above it so it can be seen again.
+        gsap.timeline({ scrollTrigger: { trigger: section, start: 'top 20%', toggleActions: 'play none none reverse' } })
+            // Fade kept out of the elastic tween so opacity never overshoots past 1
+            .from('.about__chip--hinge', { rotateX: -95, duration: 2, ease: 'elastic.out(1, 0.35)' }, 0)
+            .from('.about__chip--hinge', { autoAlpha: 0, duration: 0.3, ease: 'power1.out' }, 0);
+
+        // Pin and slide the whole track sideways, scrubbed to the scroll
+        let slide = null;
+        if (horizontal) {
+            const distance = () => track.scrollWidth - window.innerWidth;
+            slide = gsap.to(track, {
+                x: () => -distance(),
+                ease: 'none', // containerAnimation needs a linear tween
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top top',
+                    end: () => `+=${distance() * 0.85}`,
+                    pin: true,
+                    scrub: 1,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                },
+            });
         }
+
+        // Trigger helpers: follow the slide on desktop, plain vertical scroll when stacked
+        const enter = (trigger) => ({ trigger, containerAnimation: slide, start: horizontal ? 'left 85%' : 'top 85%' });
+        const scrub = (trigger) => ({
+            trigger,
+            containerAnimation: slide,
+            start: horizontal ? 'left right' : 'top bottom',
+            end: horizontal ? 'right left' : 'bottom top',
+            scrub: true,
+        });
+
+        // Intro shapes, arrival: the flower rolls in from the right like a wheel (scrubbed to the scroll),
+        // then the other shapes burst out from its centre to their own spots.
+        // The holders (.about__shape) take this; the svg inside takes the leaving drift below.
+        const flower = intro.querySelector('.about__shape--flower');
+        const others = gsap.utils.toArray('.about__shape:not(.about__shape--flower)', intro);
+        const centre = (el) => ({ x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 });
+        // Layout distance from the flower's resting spot to just past the right edge of the screen
+        const rollDistance = () => {
+            // Layout-based (offsetLeft), so the flower's own roll/rotation never skews the measurement
+            const left = flower.parentElement.getBoundingClientRect().left - gsap.getProperty(track, 'x') + flower.offsetLeft;
+            return window.innerWidth - left + 20;
+        };
+        // A wheel turns distance / radius radians; negative on the way in = rolling right to left
+        const rollTurn = () => (rollDistance() / (flower.offsetWidth / 2)) * (180 / Math.PI);
+
+        const landTrigger = horizontal
+            ? { trigger: section, start: 'top 20%' }
+            : { trigger: flower.parentElement, start: 'center 55%' };
+
+        gsap.from(flower, {
+            x: rollDistance,
+            rotation: rollTurn,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: horizontal ? section : flower.parentElement,
+                start: 'top bottom',
+                end: landTrigger.start,
+                scrub: 0.6,
+                invalidateOnRefresh: true,
+            },
+        });
+
+        // Hidden start state is set explicitly and the burst plays .to() - a staggered .from() loses its start
+        // state for every target but the first when ScrollTrigger re-measures (e.g. after webfonts load).
+        const tuckIntoFlower = () => others.forEach((el, i) => gsap.set(el, {
+            x: centre(flower).x - centre(el).x,
+            y: centre(flower).y - centre(el).y,
+            scale: 0,
+            rotation: [-160, 140, -220, 180][i % 4],
+            autoAlpha: 0,
+        }));
+        tuckIntoFlower();
+        const burst = gsap.timeline({ paused: true })
+            .to(others, { x: 0, y: 0, scale: 1, rotation: 0, duration: 1.3, ease: 'elastic.out(1, 0.6)', stagger: 0.08 })
+            // Fade kept out of the elastic tween so opacity never overshoots past 1
+            .to(others, { autoAlpha: 1, duration: 0.25, ease: 'power1.out', stagger: 0.08 }, 0);
+        ScrollTrigger.create({
+            ...landTrigger,
+            onEnter: () => burst.play(),
+            onLeaveBack: () => burst.reverse(),
+            // Layout may have moved: re-aim the tuck at the flower's new centre if the burst hasn't played
+            onRefresh: () => {
+                if (burst.progress() === 0) { tuckIntoFlower(); burst.invalidate(); }
+            },
+        });
+
+        // Intro shapes, leaving: rotate and drift apart as the intro slides away
+        const introScrub = horizontal
+            ? { trigger: intro, containerAnimation: slide, start: 'left left', end: 'right left', scrub: true }
+            : scrub(intro);
+        const drift = (sel, props) => gsap.to(intro.querySelector(`${sel} svg`), { ...props, ease: 'none', scrollTrigger: introScrub });
+        drift('.about__shape--flower', { rotate: 90, yPercent: -12 });
+        drift('.about__shape--ring', { rotate: 200, xPercent: -60, yPercent: 40 });
+        drift('.about__shape--spark', { rotate: -180, scale: 1.4, yPercent: -60 });
+        drift('.about__shape--hourglass', { rotate: 120, yPercent: 120 });
+        drift('.about__shape--dome', { xPercent: -8 });
+
+        // Words rise letter by letter as they arrive
+        words.forEach((el, i) => {
+            gsap.from(wordSplits[i].chars, {
+                yPercent: 110, duration: 0.9, stagger: 0.025, ease: 'power4.out',
+                scrollTrigger: enter(el),
+            });
+        });
+
+        // Chips drop in and swing into their tilt like a hanging sign.
+        // 2D only: a 3D flip with elastic overshoot turns big text edge-on and flickers.
+        // The tilt comes from data-tilt and GSAP owns the transform, so nothing is parsed back from CSS.
+        chips.forEach((chip) => {
+            const tilt = parseFloat(chip.dataset.tilt) || 0;
+            gsap.set(chip, { rotate: tilt, transformOrigin: '50% 0%' });
+            gsap.from(chip, {
+                yPercent: -70, rotate: tilt * -3, scale: 0.85, autoAlpha: 0,
+                duration: 1.1, ease: 'back.out(1.8)',
+                scrollTrigger: { ...enter(chip), toggleActions: 'play none none reverse' },
+            });
+        });
+
+        // Marks match the words they sit on. Each pops in when its word arrives, then either
+        // loops on its own (gear, phone, apps, sparkles, heart) or follows the scroll (stack, face, pulse line).
+        // Looping timelines start paused and only run while the section is on screen (see below).
+        const loops = [];
+        const loop = (tl) => loops.push(tl.pause());
+        marks.forEach((mark) => {
+            const svg = mark.querySelector('svg');
+            const anchor = mark.parentElement;
+            const motion = mark.dataset.motion;
+            gsap.from(mark, {
+                // The face keeps level so it reads as a mouth from its first frame
+                scale: 0, rotate: motion === 'face' ? 0 : -120, autoAlpha: 0,
+                duration: 1.3, ease: 'elastic.out(1, 0.55)',
+                scrollTrigger: enter(anchor),
+            });
+
+            switch (motion) {
+                case 'gear': // I BUILD
+                    loop(gsap.to(svg, { rotate: 360, duration: 8, ease: 'none', repeat: -1 }));
+                    break;
+
+                case 'stack': { // FULL-STACK products: layers start pressed together and spread apart
+                    const [bottom, , top] = svg.querySelectorAll('.about__layer');
+                    gsap.timeline({ scrollTrigger: { ...scrub(anchor), end: horizontal ? 'center 40%' : 'center 45%' } })
+                        .fromTo(top, { y: 22 }, { y: -12, ease: 'none' }, 0)
+                        .fromTo(bottom, { y: -22 }, { y: 12, ease: 'none' }, 0);
+                    break;
+                }
+
+                case 'phone': { // MOBILE: buzz + notification dot, then rest
+                    const dot = svg.querySelector('.about__phone-dot');
+                    gsap.set(dot, { scale: 0, transformOrigin: '50% 50%' });
+                    loop(gsap.timeline({ repeat: -1, repeatDelay: 1.8 })
+                        .to(dot, { scale: 1, duration: 0.35, ease: 'back.out(3)' })
+                        .to(svg, { rotate: 9, duration: 0.05, ease: 'none', repeat: 7, yoyo: true }, 0)
+                        .to(svg, { rotate: 0, duration: 0.1, ease: 'power1.out' })
+                        .to(dot, { scale: 0, duration: 0.3, ease: 'power2.in' }, '+=1'));
+                    break;
+                }
+
+                case 'apps': // apps: tiles pulse one after another like apps launching
+                    loop(gsap.timeline({ repeat: -1, repeatDelay: 0.9 })
+                        .to(svg.querySelectorAll('.about__tile'), {
+                            scale: 0.72, transformOrigin: '50% 50%', duration: 0.22,
+                            ease: 'power2.inOut', yoyo: true, repeat: 1, stagger: 0.14,
+                        }));
+                    break;
+
+                case 'sparkles': { // GEN AI: the two sparkles twinkle out of step
+                    const big = svg.querySelector('.about__sparkle--big');
+                    const small = svg.querySelector('.about__sparkle--small');
+                    loop(gsap.timeline({ repeat: -1 })
+                        .to(big, { scale: 0.78, rotate: 45, transformOrigin: '50% 50%', duration: 1.1, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0)
+                        .fromTo(small, { scale: 0.5 }, { scale: 1.25, rotate: -90, transformOrigin: '50% 50%', duration: 0.55, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 0));
+                    break;
+                }
+
+                case 'face': { // TOOLS: sad -> smiles at the centre of the screen -> sad again
+                    const word = anchor.nextElementSibling;
+                    const letters = word.querySelectorAll('.char'); // T O O L S
+                    // Centred under the "OO", measured from the split letters so it holds at any size
+                    const underOO = () => {
+                        const a = anchor.getBoundingClientRect();
+                        const o1 = letters[1].getBoundingClientRect();
+                        const o2 = letters[2].getBoundingClientRect();
+                        const width = (o2.right - o1.left) * 0.9;
+                        gsap.set(mark, { left: (o1.left + o2.right) / 2 - a.left - width / 2, width });
+                    };
+                    underOO();
+                    const mouth = svg.querySelector('.about__smile');
+                    const sad = mouth.getAttribute('d');           // corners down
+                    const happy = 'M14 30C14 80 106 80 106 30';   // same command structure, so it morphs point to point
+                    // Symmetric timeline: the smile peaks (and holds a beat) when TOOLS is at the centre of the screen
+                    gsap.timeline({
+                        scrollTrigger: {
+                            trigger: word,
+                            containerAnimation: slide,
+                            start: 'center 95%',
+                            end: 'center 5%',
+                            scrub: true,
+                            onRefresh: underOO, // re-centre after resizes and font loads
+                        },
+                    })
+                        .fromTo(mouth, { attr: { d: sad } }, { attr: { d: happy }, duration: 1, ease: 'power1.inOut' })
+                        .to(mouth, { attr: { d: sad }, duration: 1, ease: 'power1.inOut' }, '+=0.4');
+                    break;
+                }
+
+                case 'pulse-line': { // that feel: a heartbeat trace draws itself toward ALIVE
+                    const line = svg.querySelector('.about__pulse-line');
+                    const length = line.getTotalLength();
+                    gsap.fromTo(line, { strokeDasharray: length, strokeDashoffset: length }, {
+                        strokeDashoffset: 0, ease: 'none',
+                        scrollTrigger: { ...scrub(anchor), end: horizontal ? 'center 40%' : 'center 45%' },
+                    });
+                    break;
+                }
+
+                case 'heart': // ALIVE: lub-dub, rest
+                    loop(gsap.timeline({ repeat: -1, repeatDelay: 0.55, defaults: { transformOrigin: '50% 60%' } })
+                        .to(svg, { scale: 1.2, duration: 0.12, ease: 'power2.out' })
+                        .to(svg, { scale: 1, duration: 0.14, ease: 'power2.in' })
+                        .to(svg, { scale: 1.12, duration: 0.1, ease: 'power2.out' })
+                        .to(svg, { scale: 1, duration: 0.3, ease: 'power2.inOut' }));
+                    break;
+            }
+        });
+
+        // Looping marks only run while the About section is on screen
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top bottom',
+            // When pinned, 'bottom top' is measured as if unpinned and would stop the loops a screen into the slide:
+            // end instead one screen after the pin releases, when the section really scrolls away
+            end: horizontal ? () => slide.scrollTrigger.end + window.innerHeight : 'bottom top',
+            invalidateOnRefresh: true,
+            onToggle: (self) => loops.forEach((t) => (self.isActive ? t.play() : t.pause())),
+        });
     });
+
+    // Split text and webfonts change widths; re-measure the pin once fonts settle
+    if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
 };
 
 // 4. Skills Cloud (3D Tilt)

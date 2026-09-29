@@ -332,81 +332,353 @@ section {
 
 /* style.css */
 
-/* About (Horizontal) */
+/* About
+   Default = stacked, line wraps (touch, phones, reduced motion).
+   Pinned horizontal line only where initAbout pins it - keep this query in sync with ABOUT_HORIZONTAL in main.js. */
 .about {
-  min-height: 100vh;
-  /* Ensure parent has height for pinning to work effectively */
-  height: 100vh;
-  display: flex;
-  align-items: center;
+  position: relative;
   overflow: hidden;
+}
+
+.about__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.about__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .about__track {
   display: flex;
-  width: 300vw;
-  /* 3 panels wide */
-  height: 100%;
+  flex-direction: column;
   position: relative;
   z-index: 2;
 }
 
 .about__panel {
-  width: 100vw;
-  height: 100%;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4rem;
+  padding: clamp(4rem, 12vw, 6rem) var(--container-padding);
 }
 
-.about__content {
-  max-width: 800px;
+/* Intro */
+.about__panel--intro {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3rem;
+}
+
+.about__intro {
   position: relative;
+  z-index: 2;
+  max-width: 720px;
 }
 
-.about__label {
-  display: block;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-}
-
-.about__heading {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+.about__chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 2rem;
+  perspective: 600px;
+  font: inherit;
 }
 
-.about__text {
-  font-size: var(--text-lg);
-  line-height: 1.6;
+.about__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.5em 0.9em;
+  border-radius: 6px;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 4.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.about__chip--light {
+  position: relative;
+  z-index: 2;
+  background: var(--text-primary);
+  color: var(--bg-dark);
+}
+
+.about__chip--dark {
+  background: var(--surface);
+  color: var(--text-highlight);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.about__chip--hinge {
+  margin: -0.2em 0 0 1.4em;
+  transform-origin: 50% 0;
+  backface-visibility: hidden;
+}
+
+/* Drawn arrow: optically centred on the cap height (Oswald caps sit above the line box centre) */
+.about__arrow {
+  width: 0.72em;
+  height: 0.4em;
+  flex-shrink: 0;
+  transform: translateY(-0.04em);
+}
+
+.about__statement {
+  font-size: clamp(1.125rem, 2.2vw, 1.6rem);
+  line-height: 1.45;
   color: var(--text-secondary);
+  max-width: 34ch;
 }
 
-.about__text strong {
+/* Shape cluster - every shape is an SVG path, positioned in % of the square flair box */
+.about__flair {
+  position: relative;
+  width: min(100%, 420px);
+  aspect-ratio: 1;
+  align-self: center;
+}
+
+.about__shape {
+  position: absolute;
+  display: block;
+  will-change: transform;
+}
+
+/* The holder rolls/bursts in; the svg inside drifts with the scroll */
+.about__shape svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  will-change: transform;
+}
+
+/* The flower rolls in first and the others burst out from behind it */
+.about__shape--flower {
+  z-index: 2;
+}
+
+.about__grain {
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+.about__shape--dome {
+  left: 12%;
+  bottom: 0;
+  width: 76%;
+}
+
+.about__shape--flower {
+  left: 30%;
+  bottom: 27%;
+  width: 40%;
+}
+
+.about__shape--ring {
+  left: 2%;
+  top: 6%;
+  width: 22%;
+}
+
+.about__shape--hourglass {
+  left: 12%;
+  top: 48%;
+  width: 10%;
+}
+
+.about__shape--spark {
+  right: 4%;
+  top: 14%;
+  width: 13%;
+}
+
+/* The line */
+.about__line {
+  position: relative;
+  font-family: var(--font-heading);
+  font-size: clamp(2.75rem, 13vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: var(--text-primary);
 }
 
-.about__stat {
-  position: absolute;
-  top: -100px;
-  left: 0;
-  font-family: var(--font-heading);
-  opacity: 0.1;
-  font-weight: 700;
+.about__word {
+  position: relative;
+  z-index: 2;
 }
 
-.about__stat-num {
-  font-size: 10rem;
+/* SplitType wrappers: each word clips its rising letters */
+.about__word .word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.1;
+  padding-bottom: 0.04em;
+}
+
+.about__word .char {
+  display: inline-block;
+}
+
+/* Top-aligned like the words, then centred on their 1.1em box: --k is the chip's size relative to the line,
+   so the word box is 1.1 / k chip-ems tall and the chip itself is 2 chip-ems (1em text + 0.5em padding each side) */
+.about__chip--inline {
+  --k: 0.42;
+  position: relative;
+  z-index: 3;
+  font-size: calc(var(--k) * 1em);
+  vertical-align: top;
+  margin-top: calc((1.1 / var(--k) - 2) * 0.5em);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+/* A hook + the word it decorates: never split by a line break, so the mark always sits on its word */
+.about__pair {
+  white-space: nowrap;
+}
+
+/* Zero-width hook: the mark hangs off it above or below the text */
+/* Aligned exactly like the split words (.about__word .word: top-aligned, 1.1 line box), so the hook's box
+   is the word's box at any line-height - a baseline hook drifts below the words once lines get taller */
+.about__anchor {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1.1em;
+  vertical-align: top;
+}
+
+.about__mark {
+  position: absolute;
+  left: var(--x, 0);
+  width: var(--s, 0.6em);
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.about__mark--above {
+  bottom: 100%;
+}
+
+/* --gap: extra air under the word for marks that would otherwise read as touching it */
+.about__mark--below {
+  top: calc(100% + var(--gap, 0em));
+}
+
+/* Level with the letters, to the right of the word (--x past its width) */
+/* Level with the letters, to the right of the word (--x past its width). Centred on the capitals:
+   in Oswald the caps run from ~0.2em to ~1em down the 1.1em word box, so their middle is ~0.6em;
+   the mark is var(--s) wide and --ratio (height / width of its viewBox) tall */
+.about__mark--beside {
+  top: calc(0.6em - var(--s, 0.6em) * var(--ratio, 1) / 2);
+}
+
+.about__mark svg {
   display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Stacked: shapes shrink so they sit in the gaps between wrapped lines */
+@media (max-width: 768px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .about__line {
+    line-height: 2.3;
+  }
+
+  .about__mark {
+    width: calc(var(--s, 0.6em) * 0.7);
+  }
+
+  /* The 1em hook covers the letters; the line-height leaves ~0.5em of air above and below to sit in */
+  .about__mark--above {
+    bottom: 100%;
+  }
+
+  .about__mark--below {
+    top: 100%;
+  }
+}
+
+@media (min-width: 900px) {
+  .about__panel--intro {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Desktop: pinned horizontal line */
+@media (pointer: fine) and (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  .about {
+    height: 100vh;
+  }
+
+  .about__track {
+    flex-direction: row;
+    width: max-content;
+    height: 100%;
+    will-change: transform;
+  }
+
+  .about__panel {
+    flex-shrink: 0;
+    height: 100%;
+    padding: 0 clamp(2.5rem, 6vw, 7rem);
+  }
+
+  .about__panel--intro {
+    width: 100vw;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4vw;
+  }
+
+  .about__chip {
+    font-size: clamp(2rem, min(4vw, 8vh), 4.25rem);
+  }
+
+  .about__statement {
+    font-size: clamp(1.125rem, min(1.7vw, 3.4vh), 1.75rem);
+  }
+
+  .about__flair {
+    width: min(40vw, 72vh, 620px);
+  }
+
+  /* The slide ends with the line's end (the heart) at ~60% of the screen, leaving the right 40% empty,
+     so it reads as the section finishing before the page scrolls on (not stopping mid-way) */
+  .about__panel--line {
+    padding-right: 40vw;
+  }
+
+  .about__line {
+    font-size: clamp(5rem, min(11vw, 20vh), 13rem);
+    line-height: 1;
+    white-space: nowrap;
+    /* Room for the heart hanging past "ALIVE.", so the slide's end is measured to the heart, not the word */
+    padding-right: 0.85em;
+  }
+
+  .about__line .about__chip--inline {
+    --k: 0.36;
+  }
 }
 
 /* Skills */
@@ -1478,10 +1750,6 @@ html.menu-open body {
     min-height: 200px;
   }
 
-  .about__text {
-    font-size: var(--text-md);
-  }
-
   .hero__subtitle {
     font-size: 0.9rem;
     letter-spacing: 0.15em;
@@ -1499,15 +1767,6 @@ html.menu-open body {
 
 /* Tablet - 769px to 1024px */
 @media (max-width: 1024px) {
-
-  /* About Section - Reduce padding */
-  .about__panel {
-    padding: 3rem 2rem;
-  }
-
-  .about__heading {
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  }
 
   /* Projects - Adjust spacing */
   .project-card {
@@ -1534,24 +1793,6 @@ html.menu-open body {
 
 /* Mobile Large & Phablet - up to 768px */
 @media (max-width: 768px) {
-
-  /* ========== ABOUT SECTION: Keep horizontal, just adjust sizing ========== */
-  .about {
-    height: 100vh;
-    min-height: 100vh;
-  }
-
-  .about__panel {
-    padding: 2rem 1.5rem;
-  }
-
-  .about__heading {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-  }
-
-  .about__stat {
-    display: none;
-  }
 
   /* ========== HERO ========== */
   .hero__title {
@@ -1700,26 +1941,6 @@ html.menu-open body {
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     margin-top: 1.5rem;
-  }
-
-  /* About - Compact */
-  .about__panel {
-    padding: 2.5rem 1rem;
-  }
-
-  .about__label {
-    font-size: var(--text-xs);
-    margin-bottom: 1rem;
-  }
-
-  .about__heading {
-    font-size: 1.375rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .about__text {
-    font-size: var(--text-base);
-    line-height: 1.5;
   }
 
   /* Skills - Very compact */
