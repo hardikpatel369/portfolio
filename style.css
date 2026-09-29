@@ -333,8 +333,8 @@ section {
 /* style.css */
 
 /* About
-   Default = stacked, line wraps (touch, phones, reduced motion).
-   Pinned horizontal line only where initAbout pins it - keep this query in sync with ABOUT_HORIZONTAL in main.js. */
+   Pinned horizontal line on every device; stacked + static only with reduced motion.
+   Keep the horizontal media query in sync with ABOUT_HORIZONTAL in main.js. */
 .about {
   position: relative;
   overflow: hidden;
@@ -595,8 +595,8 @@ section {
   overflow: visible;
 }
 
-/* Stacked: shapes shrink so they sit in the gaps between wrapped lines */
-@media (max-width: 768px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+/* Reduced motion (stacked, static): shapes shrink so they sit in the gaps between wrapped lines */
+@media (prefers-reduced-motion: reduce) {
   .about__line {
     line-height: 2.3;
   }
@@ -623,10 +623,12 @@ section {
   }
 }
 
-/* Desktop: pinned horizontal line */
-@media (pointer: fine) and (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+/* Pinned horizontal line - all devices */
+@media (prefers-reduced-motion: no-preference) {
   .about {
     height: 100vh;
+    /* Smallest viewport height: the mobile address bar showing/hiding can't resize the pinned section */
+    height: 100svh;
   }
 
   .about__track {
@@ -678,6 +680,53 @@ section {
 
   .about__line .about__chip--inline {
     --k: 0.36;
+  }
+}
+
+/* Portrait screens (phones, portrait tablets): same slide, intro stacked inside the first screen,
+   sizes follow the narrow width. "Operator -> Engineer" is ~13 chip-font widths incl. its offset, hence 6.4vw */
+@media (prefers-reduced-motion: no-preference) and (max-aspect-ratio: 4/5) {
+  .about__panel {
+    padding: 0 6vw;
+  }
+
+  /* Re-assert the slide's end spacing (the shorthand above would otherwise reset it) */
+  .about__panel--line {
+    padding-right: 40vw;
+  }
+
+  .about__panel--intro {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5svh;
+  }
+
+  .about__chip {
+    font-size: min(6.4vw, 4.2svh, 2.75rem);
+  }
+
+  .about__statement {
+    font-size: clamp(1rem, 4.3vw, 1.4rem);
+  }
+
+  .about__flair {
+    width: min(78vw, 40svh);
+    align-self: center;
+  }
+
+  .about__line {
+    font-size: clamp(3.5rem, min(22vw, 13svh), 10rem);
+  }
+}
+
+/* Touch: no GPU layer promotion on About's SVG marks - iOS Safari clips SVG overflow to a promoted layer's
+   box (same issue as .spotlight__header), and some marks overflow on purpose (stack layers, phone dot) */
+@media (pointer: coarse) {
+  .about__shape,
+  .about__shape svg,
+  .about__mark {
+    will-change: auto;
   }
 }
 

@@ -317,9 +317,9 @@ const initHero = () => {
 
 // 3. About - gsap.com-style: hinged label, then one pinned line that slides sideways.
 // Words, chips and SVG marks reveal as they enter; marks either loop on their own or follow the scroll.
-// Desktop (fine pointer) pins; touch/phones get the same beats with the line wrapped vertically,
-// because a pinned section jitters under native momentum scroll. Keep ABOUT_HORIZONTAL in sync with style.css.
-const ABOUT_HORIZONTAL = '(pointer: fine) and (min-width: 769px) and (prefers-reduced-motion: no-preference)';
+// Pins and slides on every device; only reduced motion gets the static, stacked layout.
+// Keep ABOUT_HORIZONTAL in sync with style.css.
+const ABOUT_HORIZONTAL = '(prefers-reduced-motion: no-preference)';
 
 const initAbout = () => {
     const section = document.querySelector('.about');
@@ -334,10 +334,18 @@ const initAbout = () => {
     // Split once; matchMedia reverts the tweens, the wrappers stay harmless
     const wordSplits = words.map((el) => new SplitType(el, { types: 'words, chars' }));
 
+    // Touch screens: the pinned slide needs scrolling on the JS thread, or native momentum runs ahead of the pin
+    // and it judders; this also stops the address bar showing/hiding (which would move the pin's end).
+    // Page-wide and touch-only - toggling it at the section's edges would stop a flick dead. Mouse/trackpad stay native.
+    ScrollTrigger.config({ ignoreMobileResize: true });
+    gsap.matchMedia().add('(pointer: coarse) and (prefers-reduced-motion: no-preference)', () => {
+        ScrollTrigger.normalizeScroll({ type: 'touch', allowNestedScroll: true }); // nested: the menu overlay keeps its own scroll
+        return () => ScrollTrigger.normalizeScroll(false);
+    });
+
     const mm = gsap.matchMedia();
     mm.add({
         // matchMedia only runs the callback when some condition matches, so keep one that always does
-        // (without it, phones - neither horizontal nor reduce - would get no animation at all)
         any: 'all',
         horizontal: ABOUT_HORIZONTAL,
         reduce: '(prefers-reduced-motion: reduce)',
