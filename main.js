@@ -367,6 +367,8 @@ const initAbout = () => {
         let slide = null;
         if (horizontal) {
             const distance = () => track.scrollWidth - window.innerWidth;
+            // Catch-up smoothing: 1s feels floaty on touch, where scrolling already has momentum
+            const catchUp = window.matchMedia('(pointer: coarse)').matches ? 0.3 : 1;
             slide = gsap.to(track, {
                 x: () => -distance(),
                 ease: 'none', // containerAnimation needs a linear tween
@@ -375,7 +377,7 @@ const initAbout = () => {
                     start: 'top top',
                     end: () => `+=${distance() * 0.85}`,
                     pin: true,
-                    scrub: 1,
+                    scrub: catchUp,
                     anticipatePin: 1,
                     invalidateOnRefresh: true,
                 },

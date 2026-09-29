@@ -469,9 +469,10 @@ section {
   z-index: 2;
 }
 
+/* Plain alpha, no blend mode: black specks at partial opacity look the same as multiply,
+   and a blend mode forces an extra compositing pass on every repaint */
 .about__grain {
   opacity: 0.35;
-  mix-blend-mode: multiply;
 }
 
 .about__shape--dome {
@@ -720,15 +721,9 @@ section {
   }
 }
 
-/* Touch: no GPU layer promotion on About's SVG marks - iOS Safari clips SVG overflow to a promoted layer's
-   box (same issue as .spotlight__header), and some marks overflow on purpose (stack layers, phone dot) */
-@media (pointer: coarse) {
-  .about__shape,
-  .about__shape svg,
-  .about__mark {
-    will-change: auto;
-  }
-}
+/* Note: the About marks keep will-change on touch too. Each animated mark gets its own GPU layer, so a
+   looping gear/heart doesn't force the whole sliding strip to be redrawn every frame. iOS Safari clips SVG
+   overflow to a promoted layer's box, so every mark's viewBox contains all of its animated positions. */
 
 /* Skills */
 .skills {
